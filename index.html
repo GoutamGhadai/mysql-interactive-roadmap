@@ -7,12 +7,69 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
+        :root {
+            --bg-color: #eef2f9;
+            --bg-gradient-dot: #dbe3f0;
+            --text-color-primary: #334155;
+            --node-topic-bg: #ffffff;
+            --node-collapsed-bg: #f0f5ff;
+            --node-leaf-bg: #f6ffed;
+            --node-leaf-stroke: #d9f7be;
+            --node-leaf-text: #3f6212;
+            --node-stroke: #dbe3f0;
+            --link-stroke: #cbd5e1;
+            --hover-stroke: #4f46e5;
+            --searched-stroke: #f59e0b;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-header-text: #1e293b;
+            --glass-body-text: #475569;
+            --input-bg: #ffffff;
+            --input-border: #d1d5db;
+            --input-text: #111827;
+            --result-hover-bg: #eef2f9;
+            --button-text: #374151;
+            --button-hover-bg: rgba(255, 255, 255, 0.5);
+            --button-bg: rgba(255, 255, 255, 0.2);
+        }
+
+        html.dark {
+            --bg-color: #000000; /* True black */
+            --bg-gradient-dot: #1e293b; /* Slate 800 - dark dots */
+            --text-color-primary: #e2e8f0; /* Slate 200 */
+            --node-topic-bg: #334155; /* Slate 700 - Brighter node */
+            --node-collapsed-bg: #0f172a; /* Slate 900 */
+            --node-leaf-bg: #115e59; /* Teal 800 */
+            --node-leaf-stroke: #2dd4bf; /* Teal 400 */
+            --node-leaf-text: #ccfbf1; /* Teal 100 */
+            --node-stroke: #64748b; /* Slate 500 - Brighter border */
+            --link-stroke: #64748b; /* Slate 500 - Brighter link */
+            --hover-stroke: #38bdf8; /* Sky 400 - Bright hover */
+            --searched-stroke: #facc15; /* Yellow 400 - Bright search */
+            --glass-bg: #1e293b; /* Slate 800 - SOLID dark background */
+            --glass-border: #334155; /* Slate 700 - Visible border */
+            --glass-header-text: #f8fafc; /* Slate 50 */
+            --glass-body-text: #cbd5e1; /* Slate 400 */
+            --input-bg: #0f172a; /* Slate 900 */
+            --input-border: #334155; /* Slate 700 */
+            --input-text: #f1f5f9; /* Slate 100 */
+            --result-hover-bg: #334155; /* Slate 700 */
+            --button-text: #e2e8f0; /* Slate 200 */
+            --button-hover-bg: rgba(255, 255, 255, 0.1);
+            --button-bg: transparent; /* Was rgba(255, 255, 255, 0.05) */
+        }
+        
         body {
             font-family: 'Inter', sans-serif;
             overflow: hidden;
-            background-color: #eef2f9; /* Lighter, professional background */
-            background-image: radial-gradient(#dbe3f0 1px, transparent 1px);
+            background-color: var(--bg-color);
+            background-image: radial-gradient(var(--bg-gradient-dot) 1px, transparent 1px);
             background-size: 16px 16px;
+            transition: background-color 0.3s ease, background-image 0.3s ease;
+        }
+
+        html.dark body {
+            background-image: none;
         }
 
         /* --- Node Styling --- */
@@ -26,51 +83,67 @@
             cursor: pointer;
             rx: 6; /* Rounded corners */
             stroke-width: 1.5px;
-            stroke: #dbe3f0;
-            transition: stroke 0.2s ease-in-out, filter 0.2s ease-in-out;
+            stroke: var(--node-stroke);
+            transition: stroke 0.2s ease-in-out, filter 0.2s ease-in-out, fill 0.3s ease-in-out;
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
         }
-        .node.topic-node rect { fill: #ffffff; }
-        .node.collapsed-node rect { fill: #f0f5ff; }
-        .node.leaf-node rect { fill: #f6ffed; stroke: #d9f7be;}
+        .node.topic-node rect { fill: var(--node-topic-bg); }
+        .node.collapsed-node rect { fill: var(--node-collapsed-bg); }
+        .node.leaf-node rect { fill: var(--node-leaf-bg); stroke: var(--node-leaf-stroke);}
 
         .node:hover rect {
-            stroke: #4f46e5; /* Professional blue highlight on hover */
+            stroke: var(--hover-stroke);
             filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+        }
+
+        .node.node--ancestor-highlight rect {
+            stroke: var(--hover-stroke);
+        }
+
+        .node.node--expanded-highlight rect {
+            stroke: var(--hover-stroke);
+            stroke-width: 2.5px;
         }
 
         .node text {
             font-size: 11px;
             font-weight: 500;
             cursor: pointer;
-            fill: #334155;
+            fill: var(--text-color-primary);
             pointer-events: none;
+            transition: fill 0.3s ease-in-out;
         }
         .node.leaf-node text {
             font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
             font-size: 10px;
             font-weight: 600;
-            fill: #3f6212; /* Darker green for readability */
+            fill: var(--node-leaf-text);
         }
 
         /* --- Link Styling --- */
         .link {
             fill: none;
-            stroke: #cbd5e1;
+            stroke: var(--link-stroke);
             stroke-width: 1px;
+            transition: stroke 0.3s ease-in-out, stroke-width 0.3s ease-in-out;
         }
         .link.link--hover {
-            stroke: #4f46e5;
+            stroke: var(--hover-stroke);
+            stroke-width: 1.5px;
+        }
+        .link.link--expanded-highlight {
+            stroke: var(--hover-stroke);
             stroke-width: 1.5px;
         }
 
         /* --- UI Elements --- */
         .glass-ui {
-            background-color: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background-color: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease-in-out, border-color 0.3s ease-in-out;
         }
         
         .glass-ui.dragging {
@@ -81,7 +154,7 @@
 
         /* --- Search & Highlight Styling --- */
         .node.node--searched rect {
-            stroke: #f59e0b;
+            stroke: var(--searched-stroke);
             stroke-width: 3px;
             animation: pulse 1.5s infinite;
         }
@@ -97,11 +170,11 @@
             border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.2s ease-in-out;
-            color: #334155;
+            color: var(--glass-body-text);
         }
 
         #search-results .result-item:hover {
-            background-color: #eef2f9;
+            background-color: var(--result-hover-bg);
         }
     </style>
      <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -115,12 +188,12 @@
     <!-- Directory Search Widget -->
     <div id="directory-widget" class="absolute top-4 right-4 z-10 glass-ui rounded-lg max-w-sm w-11/12 sm:w-auto">
         <div id="directory-header" class="p-4 flex justify-between items-center cursor-move">
-            <h2 class="text-lg font-semibold text-slate-800">Directory Search</h2>
-            <svg id="directory-chevron" class="w-5 h-5 text-gray-600 transform transition-transform duration-300 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            <h2 class="text-lg font-semibold text-slate-800" style="color: var(--glass-header-text)">Directory Search</h2>
+            <svg id="directory-chevron" class="w-5 h-5 text-gray-600 transform transition-transform duration-300 rotate-180" style="color: var(--glass-body-text)" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
         </div>
         <div id="directory-content" class="text-sm text-slate-600 overflow-hidden transition-all duration-500 ease-in-out" style="max-height: 0px;">
-            <div class="px-4 pb-4 border-t border-gray-200">
-                <input type="search" id="search-input" placeholder="Search for a topic..." class="mt-3 w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-slate-800">
+            <div class="px-4 pb-4 border-t" style="border-color: var(--glass-border)">
+                <input type="search" id="search-input" placeholder="Search for a topic..." class="mt-3 w-full p-2 rounded-md focus:ring-indigo-500 focus:border-indigo-500" style="background-color: var(--input-bg); border: 1px solid var(--input-border); color: var(--input-text);">
                 <div id="search-results" class="mt-2 max-h-64 overflow-y-auto"></div>
             </div>
         </div>
@@ -129,38 +202,31 @@
     <!-- Instructions Widget -->
     <div id="instructions-widget" class="absolute top-48 right-4 z-10 glass-ui rounded-lg max-w-sm w-11/12 sm:w-auto">
         <div id="instructions-header" class="p-4 flex justify-between items-center cursor-move">
-            <h2 class="text-lg font-semibold text-slate-800">Instructions</h2>
-            <svg id="instructions-chevron" class="w-5 h-5 text-gray-600 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            <h2 class="text-lg font-semibold text-slate-800" style="color: var(--glass-header-text)">Instructions</h2>
+            <svg id="instructions-chevron" class="w-5 h-5 text-gray-600 transform transition-transform duration-300" style="color: var(--glass-body-text)" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
         </div>
-        <div id="instructions-content" class="text-sm text-slate-600 space-y-2 overflow-hidden transition-all duration-500 ease-in-out">
-            <div class="px-4 pb-4 border-t border-gray-200">
-                <p class="pt-2"><span class="font-semibold text-slate-700">Click Node:</span> Toggles child topics visibility.</p>
-                <p><span class="font-semibold text-slate-700">Pan & Zoom:</span> Drag background or use scroll wheel.</p>
-                <p><span class="font-semibold text-slate-700">Search:</span> Use the directory to find and focus on nodes.</p>
-                <p><span class="font-semibold text-slate-700">Hover:</span> Highlight a node and its connections.</p>
-                <p><span class="font-semibold text-slate-700">Draggable UI:</span> All info panels can be moved around.</p>
+        <div id="instructions-content" class="text-sm text-slate-600 space-y-2 overflow-hidden transition-all duration-500 ease-in-out" style="color: var(--glass-body-text)">
+            <div class="px-4 pb-4 border-t" style="border-color: var(--glass-border)">
+                <p class="pt-2"><span class="font-semibold" style="color: var(--glass-header-text)">Click Node:</span> Toggles child topics visibility.</p>
+                <p><span class="font-semibold" style="color: var(--glass-header-text)">Pan & Zoom:</span> Drag background or use scroll wheel.</p>
+                <p><span class="font-semibold" style="color: var(--glass-header-text)">Search:</span> Use the directory to find and focus on nodes.</p>
+                <p><span class="font-semibold" style="color: var(--glass-header-text)">Hover:</span> Highlight a node and its connections.</p>
+                <p><span class="font-semibold" style="color: var(--glass-header-text)">Draggable UI:</span> All info panels can be moved around.</p>
             </div>
         </div>
     </div>
 
-     <div class="absolute bottom-4 left-4 glass-ui p-3 rounded-lg flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-        <div class="flex items-center space-x-2">
-            <div class="w-4 h-4 rounded-md bg-white border border-slate-300"></div>
-            <span class="text-slate-600 font-medium">Topic</span>
-        </div>
-        <div class="flex items-center space-x-2">
-             <div class="w-4 h-4 rounded-md bg-blue-50 border border-slate-300"></div>
-            <span class="text-slate-600 font-medium">Topic (Collapsed)</span>
-        </div>
-        <div class="flex items-center space-x-2">
-             <div class="w-4 h-4 rounded-md bg-green-50 border border-green-200"></div>
-            <span class="text-slate-600 font-medium">Command/Example</span>
-        </div>
+    <!-- Dark Mode Toggle -->
+    <div class="absolute bottom-4 left-4 z-10 glass-ui p-1.5 rounded-lg">
+        <button id="dark-mode-toggle" class="p-2 rounded-md transition-colors" style="--button-hover-bg-light: #ffffff80; --button-hover-bg-dark: #00000033;" onmouseover="this.style.backgroundColor = document.documentElement.classList.contains('dark') ? 'var(--button-hover-bg-dark)' : 'var(--button-hover-bg-light)'" onmouseout="this.style.backgroundColor = 'transparent'">
+            <svg id="theme-icon-light" class="w-6 h-6 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            <svg id="theme-icon-dark" class="w-6 h-6 text-slate-200 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        </button>
     </div>
-    
+
     <!-- Control Buttons -->
     <div id="controls-widget" class="absolute bottom-4 right-4 z-10 glass-ui p-1.5 rounded-lg cursor-move">
-        <button id="collapse-all-btn" class="px-4 py-2 rounded-md font-semibold text-slate-700 hover:bg-white/50 transition-colors bg-white/20">Collapse All</button>
+        <button id="collapse-all-btn" class="px-4 py-2 rounded-md font-semibold transition-colors" style="color: var(--button-text); background-color: var(--button-bg);" onmouseover="this.style.backgroundColor = 'var(--button-hover-bg)'" onmouseout="this.style.backgroundColor = 'var(--button-bg)'">Collapse All</button>
     </div>
 
     <script>
@@ -905,35 +971,28 @@
                 .data(nodes, d => d.id || (d.id = ++i));
 
             const nodeEnter = node.enter().append("g")
-                .attr("class", d => {
-                    let classes = "node";
-                    if (!d.children && !d._children) classes += " leaf-node";
-                    else if (d._children) classes += " collapsed-node";
-                    else classes += " topic-node";
-                    return classes;
-                })
+                .attr("class", "node") // Set base class, specific classes will be toggled later
                 .attr("transform", d => `translate(${source.y0},${source.x0})`)
                 .on("click", click)
-                 .on("mouseover", function(event, d) {
-                     d3.select(this).raise(); 
-                     if (d.parent) {
-                        g.selectAll('path.link').filter(link_d => link_d.id === d.id).classed('link--hover', true);
-                    }
-                    const children = d.children || d._children;
-                    if (children) {
-                        const childrenIds = children.map(child => child.id);
-                        g.selectAll('path.link').filter(link_d => childrenIds.includes(link_d.id)).classed('link--hover', true);
-                    }
+                .on("mouseover", function(event, d) {
+                    // Highlight the path from the hovered node to the root
+                    const ancestors = d.ancestors();
+                    const ancestorIds = new Set(ancestors.map(node => node.id));
+
+                    g.selectAll('g.node')
+                        .filter(node_d => ancestorIds.has(node_d.id))
+                        .classed('node--ancestor-highlight', true)
+                        .raise(); // Bring highlighted nodes to the front
+
+                    g.selectAll('path.link')
+                        .filter(link_d => ancestorIds.has(link_d.id) && link_d.parent && ancestorIds.has(link_d.parent.id))
+                        .classed('link--hover', true)
+                        .raise(); // Bring highlighted links to the front
                 })
                 .on("mouseout", function(event, d) {
-                     if (d.parent) {
-                        g.selectAll('path.link').filter(link_d => link_d.id === d.id).classed('link--hover', false);
-                    }
-                    const children = d.children || d._children;
-                    if (children) {
-                         const childrenIds = children.map(child => child.id);
-                        g.selectAll('path.link').filter(link_d => childrenIds.includes(link_d.id)).classed('link--hover', false);
-                    }
+                    // Remove all ancestor highlights on mouse out
+                    g.selectAll('.node--ancestor-highlight').classed('node--ancestor-highlight', false);
+                    g.selectAll('.link--hover').classed('link--hover', false);
                 });
             
             const nodeContent = nodeEnter.append('g')
@@ -954,6 +1013,13 @@
                 .style('opacity', 0);
 
             const nodeUpdate = nodeEnter.merge(node);
+            
+            // Update classes for all nodes (entering or updating) to handle state changes
+            nodeUpdate
+                .classed('leaf-node', d => !d.children && !d._children)
+                .classed('collapsed-node', d => !!d._children)
+                .classed('topic-node', d => !!d.children)
+                .classed('node--expanded-highlight', d => d.depth > 0 && !!d.children); // Highlight if expanded and not root
             
             nodeUpdate.transition()
                 .duration(duration)
@@ -1007,6 +1073,8 @@
                 });
                 
             const linkUpdate = linkEnter.merge(link);
+
+            linkUpdate.classed('link--expanded-highlight', d => d.depth > 0 && !!d.children);
 
             linkUpdate.transition()
                 .duration(duration)
@@ -1152,7 +1220,7 @@
 
         const toggleDirectory = (e) => {
             // Prevent the drag from firing when clicking the collapse icon
-            if(e.target.tagName === 'svg' || e.target.tagName === 'path') {
+            if(e.target.closest('svg')) {
                 const isCollapsed = directoryContent.style.maxHeight === '0px' || directoryContent.style.maxHeight === '';
                 if (isCollapsed) {
                     directoryContent.style.maxHeight = directoryContent.scrollHeight + "px";
@@ -1174,7 +1242,7 @@
         if (instructionsHeader && instructionsContent && instructionsChevron) {
             const toggleInstructions = (e) => {
                  // Prevent the drag from firing when clicking the collapse icon
-                if(e.target.tagName === 'svg' || e.target.tagName === 'path') {
+                if(e.target.closest('svg')) {
                     const isCollapsed = instructionsContent.style.maxHeight === '0px' || instructionsContent.style.maxHeight === '';
                     if (isCollapsed) {
                         instructionsContent.style.maxHeight = instructionsContent.scrollHeight + "px";
@@ -1188,11 +1256,9 @@
 
             instructionsHeader.addEventListener('click', toggleInstructions);
 
-            // Set initial state
-            if (window.innerWidth < 768) {
-                instructionsContent.style.maxHeight = '0px';
-                instructionsChevron.classList.add('rotate-180');
-            }
+            // Set initial state - collapsed by default
+            instructionsContent.style.maxHeight = '0px';
+            instructionsChevron.classList.add('rotate-180');
         }
 
         // --- Draggable UI Widgets ---
@@ -1288,9 +1354,45 @@
         if (directoryWidget) makeDraggable(directoryWidget, document.getElementById('directory-header'));
         if (instructionsWidget) makeDraggable(instructionsWidget, document.getElementById('instructions-header'));
         if (controlsWidget) makeDraggable(controlsWidget, controlsWidget);
+        
+        // --- Dark Mode Toggle Logic ---
+        const themeToggleBtn = document.getElementById('dark-mode-toggle');
+        const lightIcon = document.getElementById('theme-icon-light');
+        const darkIcon = document.getElementById('theme-icon-dark');
+
+        const applyTheme = (theme) => {
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                lightIcon.classList.add('hidden');
+                darkIcon.classList.remove('hidden');
+                localStorage.theme = 'dark';
+            } else {
+                document.documentElement.classList.remove('dark');
+                lightIcon.classList.remove('hidden');
+                darkIcon.classList.add('hidden');
+                localStorage.theme = 'light';
+            }
+        };
+
+        themeToggleBtn.addEventListener('click', () => {
+            const currentTheme = localStorage.theme === 'dark' ? 'light' : 'dark';
+            applyTheme(currentTheme);
+        });
+
+        // Apply theme on initial load
+        if (localStorage.theme === 'dark') {
+            applyTheme('dark');
+        } else {
+            applyTheme('light');
+        }
 
     </script>
 </body>
 </html>
+
+
+
+
+
 
 

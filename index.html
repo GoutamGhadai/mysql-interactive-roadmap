@@ -34,29 +34,37 @@
         }
 
         html.dark {
-            --bg-color: #000000; /* True black */
-            --bg-gradient-dot: #1e293b; /* Slate 800 - dark dots */
-            --text-color-primary: #e2e8f0; /* Slate 200 */
-            --node-topic-bg: #334155; /* Slate 700 - Brighter node */
-            --node-collapsed-bg: #0f172a; /* Slate 900 */
-            --node-leaf-bg: #115e59; /* Teal 800 */
-            --node-leaf-stroke: #2dd4bf; /* Teal 400 */
-            --node-leaf-text: #ccfbf1; /* Teal 100 */
-            --node-stroke: #64748b; /* Slate 500 - Brighter border */
-            --link-stroke: #64748b; /* Slate 500 - Brighter link */
-            --hover-stroke: #38bdf8; /* Sky 400 - Bright hover */
-            --searched-stroke: #facc15; /* Yellow 400 - Bright search */
-            --glass-bg: #1e293b; /* Slate 800 - SOLID dark background */
-            --glass-border: #334155; /* Slate 700 - Visible border */
-            --glass-header-text: #f8fafc; /* Slate 50 */
-            --glass-body-text: #cbd5e1; /* Slate 400 */
-            --input-bg: #0f172a; /* Slate 900 */
-            --input-border: #334155; /* Slate 700 */
-            --input-text: #f1f5f9; /* Slate 100 */
-            --result-hover-bg: #334155; /* Slate 700 */
-            --button-text: #e2e8f0; /* Slate 200 */
-            --button-hover-bg: rgba(255, 255, 255, 0.1);
-            --button-bg: transparent; /* Was rgba(255, 255, 255, 0.05) */
+            /* --- High Contrast Dark Theme --- */
+            --bg-color: #0d1117; /* Solid dark background */
+            --text-color-primary: #f0f6fc; /* Almost white text for max contrast */
+            
+            /* Nodes - Made significantly brighter */
+            --node-topic-bg: #30363d; /* Lighter gray for active topics */
+            --node-collapsed-bg: #21262d; /* Lighter gray for collapsed topics */
+            --node-leaf-bg: #034e71; /* A brighter, more saturated blue for commands */
+            --node-leaf-stroke: #06b6d4; /* A vivid cyan for command borders */
+            --node-leaf-text: #f0f6fc; /* White text on commands for readability */
+            --node-stroke: #8b949e; /* Distinct gray border */
+            
+            /* Links & Highlights - Made links much brighter */
+            --link-stroke: #8b949e; /* Brighter links, matching node borders */
+            --hover-stroke: #2563eb; /* A strong, vibrant blue for hover */
+            --searched-stroke: #f59e0b; /* Bright yellow for search */
+
+            /* UI Panes */
+            --glass-bg: #161b22; /* Dark gray, distinct from main BG */
+            --glass-border: #30363d; /* Subtle border */
+            --glass-header-text: #f0f6fc; /* Almost white header */
+            --glass-body-text: #c9d1d9; /* Lighter body text */
+            
+            /* Inputs & Buttons */
+            --input-bg: #0d1117; /* Same as main BG */
+            --input-border: #30363d; /* Matches glass border */
+            --input-text: #c9d1d9; /* Light text */
+            --result-hover-bg: #30363d;
+            --button-text: #c9d1d9;
+            --button-hover-bg: #ffffff1a; /* Faint white on hover */
+            --button-bg: transparent;
         }
         
         body {
@@ -65,10 +73,11 @@
             background-color: var(--bg-color);
             background-image: radial-gradient(var(--bg-gradient-dot) 1px, transparent 1px);
             background-size: 16px 16px;
-            transition: background-color 0.3s ease, background-image 0.3s ease;
+            transition: background-color 0.3s ease;
         }
 
         html.dark body {
+             /* In dark mode, we don't want the dotted pattern, just the solid background color. */
             background-image: none;
         }
 
@@ -218,7 +227,7 @@
 
     <!-- Dark Mode Toggle -->
     <div class="absolute bottom-4 left-4 z-10 glass-ui p-1.5 rounded-lg">
-        <button id="dark-mode-toggle" class="p-2 rounded-md transition-colors" style="--button-hover-bg-light: #ffffff80; --button-hover-bg-dark: #00000033;" onmouseover="this.style.backgroundColor = document.documentElement.classList.contains('dark') ? 'var(--button-hover-bg-dark)' : 'var(--button-hover-bg-light)'" onmouseout="this.style.backgroundColor = 'transparent'">
+        <button id="dark-mode-toggle" class="p-2 rounded-md transition-colors" style="--button-hover-bg-light: #ffffff80; --button-hover-bg-dark: #00000033;" onmouseover="this.style.backgroundColor = document.documentElement.classList.contains('dark') ? 'var(--button-hover-bg)' : 'var(--button-hover-bg-light)'" onmouseout="this.style.backgroundColor = 'transparent'">
             <svg id="theme-icon-light" class="w-6 h-6 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
             <svg id="theme-icon-dark" class="w-6 h-6 text-slate-200 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
         </button>
@@ -1389,10 +1398,4 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
 

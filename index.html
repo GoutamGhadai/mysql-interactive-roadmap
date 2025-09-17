@@ -73,6 +73,12 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         
+        .glass-ui.dragging {
+            z-index: 1000;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            user-select: none;
+        }
+
         /* --- Search & Highlight Styling --- */
         .node.node--searched rect {
             stroke: #f59e0b;
@@ -105,44 +111,39 @@
 <body class="bg-gray-100">
     <div id="mindmap-container" class="w-screen h-screen"></div>
 
-    <!-- Control Buttons -->
-    <div class="absolute top-4 left-4 flex space-x-2 z-10">
-        <button id="expand-all-btn" class="glass-ui px-4 py-2 rounded-lg font-semibold text-slate-700 hover:bg-slate-100 transition-colors">Expand All</button>
-        <button id="collapse-all-btn" class="glass-ui px-4 py-2 rounded-lg font-semibold text-slate-700 hover:bg-slate-100 transition-colors">Collapse All</button>
-    </div>
-
     <!-- UI Widgets Container -->
-    <div class="absolute top-4 right-4 flex flex-col space-y-2 z-10">
-        <!-- Directory Search Widget -->
-        <div class="glass-ui rounded-lg max-w-sm w-11/12 sm:w-auto">
-            <div id="directory-header" class="p-4 flex justify-between items-center cursor-pointer">
-                <h2 class="text-lg font-semibold text-slate-800">Directory Search</h2>
-                <svg id="directory-chevron" class="w-5 h-5 text-gray-600 transform transition-transform duration-300 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-            </div>
-            <div id="directory-content" class="text-sm text-slate-600 overflow-hidden transition-all duration-500 ease-in-out" style="max-height: 0px;">
-                <div class="px-4 pb-4 border-t border-gray-200">
-                    <input type="search" id="search-input" placeholder="Search for a topic..." class="mt-3 w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-slate-800">
-                    <div id="search-results" class="mt-2 max-h-64 overflow-y-auto"></div>
-                </div>
-            </div>
+    <!-- Directory Search Widget -->
+    <div id="directory-widget" class="absolute top-4 right-4 z-10 glass-ui rounded-lg max-w-sm w-11/12 sm:w-auto">
+        <div id="directory-header" class="p-4 flex justify-between items-center cursor-move">
+            <h2 class="text-lg font-semibold text-slate-800">Directory Search</h2>
+            <svg id="directory-chevron" class="w-5 h-5 text-gray-600 transform transition-transform duration-300 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
         </div>
-
-        <!-- Instructions Widget -->
-        <div class="glass-ui rounded-lg max-w-sm w-11/12 sm:w-auto">
-            <div id="instructions-header" class="p-4 flex justify-between items-center cursor-pointer">
-                <h2 class="text-lg font-semibold text-slate-800">Instructions</h2>
-                <svg id="instructions-chevron" class="w-5 h-5 text-gray-600 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-            </div>
-            <div id="instructions-content" class="text-sm text-slate-600 space-y-2 overflow-hidden transition-all duration-500 ease-in-out">
-                <div class="px-4 pb-4 border-t border-gray-200">
-                    <p class="pt-2"><span class="font-semibold text-slate-700">Click Node</span> to expand/collapse.</p>
-                    <p><span class="font-semibold text-slate-700">Scroll/Drag</span> to navigate the map.</p>
-                </div>
+        <div id="directory-content" class="text-sm text-slate-600 overflow-hidden transition-all duration-500 ease-in-out" style="max-height: 0px;">
+            <div class="px-4 pb-4 border-t border-gray-200">
+                <input type="search" id="search-input" placeholder="Search for a topic..." class="mt-3 w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-slate-800">
+                <div id="search-results" class="mt-2 max-h-64 overflow-y-auto"></div>
             </div>
         </div>
     </div>
 
-     <div class="absolute bottom-4 left-4 glass-ui p-3 rounded-lg flex items-center space-x-4 text-sm">
+    <!-- Instructions Widget -->
+    <div id="instructions-widget" class="absolute top-48 right-4 z-10 glass-ui rounded-lg max-w-sm w-11/12 sm:w-auto">
+        <div id="instructions-header" class="p-4 flex justify-between items-center cursor-move">
+            <h2 class="text-lg font-semibold text-slate-800">Instructions</h2>
+            <svg id="instructions-chevron" class="w-5 h-5 text-gray-600 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+        </div>
+        <div id="instructions-content" class="text-sm text-slate-600 space-y-2 overflow-hidden transition-all duration-500 ease-in-out">
+            <div class="px-4 pb-4 border-t border-gray-200">
+                <p class="pt-2"><span class="font-semibold text-slate-700">Click Node:</span> Toggles child topics visibility.</p>
+                <p><span class="font-semibold text-slate-700">Pan & Zoom:</span> Drag background or use scroll wheel.</p>
+                <p><span class="font-semibold text-slate-700">Search:</span> Use the directory to find and focus on nodes.</p>
+                <p><span class="font-semibold text-slate-700">Hover:</span> Highlight a node and its connections.</p>
+                <p><span class="font-semibold text-slate-700">Draggable UI:</span> All info panels can be moved around.</p>
+            </div>
+        </div>
+    </div>
+
+     <div class="absolute bottom-4 left-4 glass-ui p-3 rounded-lg flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
         <div class="flex items-center space-x-2">
             <div class="w-4 h-4 rounded-md bg-white border border-slate-300"></div>
             <span class="text-slate-600 font-medium">Topic</span>
@@ -155,6 +156,11 @@
              <div class="w-4 h-4 rounded-md bg-green-50 border border-green-200"></div>
             <span class="text-slate-600 font-medium">Command/Example</span>
         </div>
+    </div>
+    
+    <!-- Control Buttons -->
+    <div id="controls-widget" class="absolute bottom-4 right-4 z-10 glass-ui p-1.5 rounded-lg cursor-move">
+        <button id="collapse-all-btn" class="px-4 py-2 rounded-md font-semibold text-slate-700 hover:bg-white/50 transition-colors bg-white/20">Collapse All</button>
     </div>
 
     <script>
@@ -1051,13 +1057,7 @@
         svg.call(zoom.transform, initialTransform);
 
         // --- Expand/Collapse All Logic ---
-        const expandAllBtn = document.getElementById('expand-all-btn');
         const collapseAllBtn = document.getElementById('collapse-all-btn');
-
-        expandAllBtn.addEventListener('click', () => {
-            expand(root);
-            update(root);
-        });
 
         collapseAllBtn.addEventListener('click', () => {
             if (root.children) {
@@ -1150,15 +1150,18 @@
             }
         });
 
-        const toggleDirectory = () => {
-            const isCollapsed = directoryContent.style.maxHeight === '0px' || directoryContent.style.maxHeight === '';
-            if (isCollapsed) {
-                directoryContent.style.maxHeight = directoryContent.scrollHeight + "px";
-                directoryChevron.classList.remove('rotate-180');
-            } else {
-                directoryContent.style.maxHeight = '0px';
-                directoryChevron.classList.add('rotate-180');
-                clearSearch(); // Clear search when closing
+        const toggleDirectory = (e) => {
+            // Prevent the drag from firing when clicking the collapse icon
+            if(e.target.tagName === 'svg' || e.target.tagName === 'path') {
+                const isCollapsed = directoryContent.style.maxHeight === '0px' || directoryContent.style.maxHeight === '';
+                if (isCollapsed) {
+                    directoryContent.style.maxHeight = directoryContent.scrollHeight + "px";
+                    directoryChevron.classList.remove('rotate-180');
+                } else {
+                    directoryContent.style.maxHeight = '0px';
+                    directoryChevron.classList.add('rotate-180');
+                    clearSearch(); // Clear search when closing
+                }
             }
         };
         directoryHeader.addEventListener('click', toggleDirectory);
@@ -1168,27 +1171,126 @@
         const instructionsContent = document.getElementById('instructions-content');
         const instructionsChevron = document.getElementById('instructions-chevron');
 
-        const toggleInstructions = () => {
-            const isCollapsed = instructionsContent.style.maxHeight === '0px' || instructionsContent.style.maxHeight === '';
-            if (isCollapsed) {
-                instructionsContent.style.maxHeight = instructionsContent.scrollHeight + "px";
-                instructionsChevron.classList.remove('rotate-180');
-            } else {
+        if (instructionsHeader && instructionsContent && instructionsChevron) {
+            const toggleInstructions = (e) => {
+                 // Prevent the drag from firing when clicking the collapse icon
+                if(e.target.tagName === 'svg' || e.target.tagName === 'path') {
+                    const isCollapsed = instructionsContent.style.maxHeight === '0px' || instructionsContent.style.maxHeight === '';
+                    if (isCollapsed) {
+                        instructionsContent.style.maxHeight = instructionsContent.scrollHeight + "px";
+                        instructionsChevron.classList.remove('rotate-180');
+                    } else {
+                        instructionsContent.style.maxHeight = '0px';
+                        instructionsChevron.classList.add('rotate-180');
+                    }
+                }
+            };
+
+            instructionsHeader.addEventListener('click', toggleInstructions);
+
+            // Set initial state
+            if (window.innerWidth < 768) {
                 instructionsContent.style.maxHeight = '0px';
                 instructionsChevron.classList.add('rotate-180');
             }
-        };
-
-        instructionsHeader.addEventListener('click', toggleInstructions);
-
-        // Set initial state
-        if (window.innerWidth < 768) {
-            instructionsContent.style.maxHeight = '0px';
-            instructionsChevron.classList.add('rotate-180');
-        } else {
-            instructionsContent.style.maxHeight = instructionsContent.scrollHeight + "px";
         }
+
+        // --- Draggable UI Widgets ---
+        function makeDraggable(widget, handle) {
+            let offsetX, offsetY, isDragging = false;
+            let hasDragged = false; // To distinguish click from drag
+            const dragHandle = handle || widget;
+
+            dragHandle.style.cursor = 'move';
+
+            const onDragStart = (e) => {
+                // Ignore clicks on specific interactive elements like inputs or the collapse icon, but allow buttons to be dragged.
+                if (e.target.closest('input, svg')) {
+                    return;
+                }
+                
+                // Use preventDefault for touch events to stop page scrolling, and for mouse to prevent selection
+                if (e.type === 'touchstart') {
+                    // This is required to be able to call preventDefault in a touch listener.
+                } else {
+                    e.preventDefault(); 
+                }
+
+                isDragging = true;
+                hasDragged = false; // Reset on new drag start
+                widget.classList.add('dragging');
+                
+                const rect = widget.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                offsetX = clientX - rect.left;
+                offsetY = clientY - rect.top;
+                
+                document.addEventListener('mousemove', onDragMove);
+                document.addEventListener('touchmove', onDragMove, { passive: false });
+                
+                document.addEventListener('mouseup', onDragEnd, { once: true });
+                document.addEventListener('touchend', onDragEnd, { once: true });
+            };
+
+            const onDragMove = (e) => {
+                if (!isDragging) return;
+                hasDragged = true; // If we moved, it's a drag
+                
+                // Prevent scrolling on touch devices
+                if (e.type === 'touchmove') {
+                    e.preventDefault();
+                }
+                
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                let newLeft = clientX - offsetX;
+                let newTop = clientY - offsetY;
+                
+                const rect = widget.getBoundingClientRect();
+                // Constrain movement within the viewport with a small padding
+                newLeft = Math.max(8, Math.min(newLeft, window.innerWidth - rect.width - 8));
+                newTop = Math.max(8, Math.min(newTop, window.innerHeight - rect.height - 8));
+                
+                widget.style.left = `${newLeft}px`;
+                widget.style.top = `${newTop}px`;
+                widget.style.right = 'auto'; // remove positioning constraints
+                widget.style.bottom = 'auto';
+            };
+
+            const onDragEnd = () => {
+                isDragging = false;
+                widget.classList.remove('dragging');
+                document.removeEventListener('mousemove', onDragMove);
+                document.removeEventListener('touchmove', onDragMove);
+            };
+
+            dragHandle.addEventListener('mousedown', onDragStart);
+            dragHandle.addEventListener('touchstart', onDragStart, { passive: false });
+
+            // This listener prevents the 'click' event from firing on the button
+            // if the user has dragged the widget. It must be in the capture phase.
+            dragHandle.addEventListener('click', e => {
+                if (hasDragged) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            }, true);
+        }
+
+        // Initialize Draggable Widgets
+        const directoryWidget = document.getElementById('directory-widget');
+        const instructionsWidget = document.getElementById('instructions-widget');
+        const controlsWidget = document.getElementById('controls-widget');
+
+        if (directoryWidget) makeDraggable(directoryWidget, document.getElementById('directory-header'));
+        if (instructionsWidget) makeDraggable(instructionsWidget, document.getElementById('instructions-header'));
+        if (controlsWidget) makeDraggable(controlsWidget, controlsWidget);
+
     </script>
 </body>
 </html>
+
 

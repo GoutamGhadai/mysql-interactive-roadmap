@@ -42,9 +42,9 @@
             --node-topic-bg: #30363d; /* Lighter gray for active topics */
             --node-collapsed-bg: #21262d; /* Lighter gray for collapsed topics */
             --node-leaf-bg: #034e71; /* A brighter, more saturated blue for commands */
-            --node-leaf-stroke: #06b6d4; /* A vivid cyan for command borders */
+            --node-leaf-stroke: transparent; /* No border for leaf nodes in dark mode by default */
             --node-leaf-text: #f0f6fc; /* White text on commands for readability */
-            --node-stroke: #8b949e; /* Distinct gray border */
+            --node-stroke: transparent; /* No border in dark mode by default */
             
             /* Links & Highlights - Made links much brighter */
             --link-stroke: #8b949e; /* Brighter links, matching node borders */
@@ -79,7 +79,7 @@
         html.dark body {
              /* In dark mode, we don't want the dotted pattern, just the solid background color. */
             background-image: none;
-            background-color: var(--bg-color);
+            background-color: #0F0F0F;
         }
 
         /* --- Node Styling --- */
@@ -1399,4 +1399,3 @@
     </script>
 </body>
 </html>
-

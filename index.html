@@ -296,7 +296,7 @@
 
             const onDragStart = (e) => {
                 // Allow dragging on the button container, but not on specific inner elements.
-                if (e.target.closest('input, svg, button')) return;
+                if (e.target.closest('input, svg')) return;
                 
                 if (e.type !== 'touchstart') e.preventDefault(); 
                 isDragging = true;

@@ -281,6 +281,7 @@
     let currentModule = 'git';
     let isAnimating = false;
     let currentTransform = null; // Variable to store zoom state across module switches
+    let isSearchPanelOpen = true; // Variable to store search panel state
 
     // This function sets up all persistent UI controls and should only be run once.
     function initializeGlobalUI() {
@@ -294,8 +295,8 @@
             dragHandle.style.cursor = 'move';
 
             const onDragStart = (e) => {
-                // Allow dragging on the button container, but not on specific inner elements like input fields or collapse icons.
-                if (e.target.closest('input, svg')) return;
+                // Allow dragging on the button container, but not on specific inner elements.
+                if (e.target.closest('input, svg, button')) return;
                 
                 if (e.type !== 'touchstart') e.preventDefault(); 
                 isDragging = true;
@@ -360,6 +361,10 @@
         const themeToggleBtn = document.getElementById('dark-mode-toggle');
         const lightIcon = document.getElementById('theme-icon-light');
         const darkIcon = document.getElementById('theme-icon-dark');
+        
+        const directoryHeader = document.getElementById('directory-header');
+        const directoryContent = document.getElementById('directory-content');
+        const directoryChevron = document.getElementById('directory-chevron');
 
         const applyTheme = (theme) => {
             if (theme === 'dark') {
@@ -377,6 +382,20 @@
 
         themeToggleBtn.addEventListener('click', () => {
             applyTheme(localStorage.theme === 'dark' ? 'light' : 'dark');
+        });
+        
+        directoryHeader.addEventListener('click', (e) => {
+             if(e.target.closest('svg')) {
+                const isCollapsed = directoryContent.style.maxHeight === '0px' || directoryContent.style.maxHeight === '';
+                isSearchPanelOpen = !isCollapsed; // Update global state
+                if (isCollapsed) {
+                    directoryContent.style.maxHeight = directoryContent.scrollHeight + "px";
+                    directoryChevron.classList.remove('rotate-180');
+                } else {
+                    directoryContent.style.maxHeight = '0px';
+                    directoryChevron.classList.add('rotate-180');
+                }
+            }
         });
 
         applyTheme(localStorage.theme === 'dark' ? 'dark' : 'light');
@@ -708,38 +727,8 @@
 
         const searchInput = document.getElementById('search-input');
         const searchResults = document.getElementById('search-results');
-        const directoryHeader = document.getElementById('directory-header');
-        const directoryContent = document.getElementById('directory-content');
-        const directoryChevron = document.getElementById('directory-chevron');
-
-        function clearSearch() {
-            searchInput.value = '';
-            searchResults.innerHTML = '';
-            g.selectAll("g.node").classed("node--searched", false);
-        }
-
-        function expandToNode(d) {
-            let current = d;
-            while (current.parent) {
-                if (current.parent._children) {
-                    current.parent.children = current.parent._children;
-                    current.parent._children = null;
-                }
-                current = current.parent;
-            }
-        }
-
-        function centerNode(d) {
-            const scale = currentTransform ? currentTransform.k : 1;
-            const x = -d.y * scale + width / 2 - (d.rectWidth ? d.rectWidth / 2 * scale : 0);
-            const y = -d.x * scale + height / 2;
-            const transform = d3.zoomIdentity.translate(x, y).scale(scale);
-
-            svg.transition()
-                .duration(750)
-                .call(zoom.transform, transform);
-        }
-
+        
+        // This logic is now only for search functionality, not collapse/expand
         searchInput.addEventListener('input', () => {
             const searchTerm = searchInput.value.toLowerCase().trim();
             searchResults.innerHTML = '';
@@ -772,31 +761,26 @@
                 }
             }
             
-            if (directoryContent.style.maxHeight !== '0px') {
+            if (isSearchPanelOpen) {
+                 const directoryContent = document.getElementById('directory-content');
                 setTimeout(() => {
                     directoryContent.style.maxHeight = directoryContent.scrollHeight + "px";
                 }, 50);
             }
         });
         
-        directoryHeader.addEventListener('click', (e) => {
-             if(e.target.closest('svg')) {
-                const isCollapsed = directoryContent.style.maxHeight === '0px' || directoryContent.style.maxHeight === '';
-                if (isCollapsed) {
-                    directoryContent.style.maxHeight = directoryContent.scrollHeight + "px";
-                    directoryChevron.classList.remove('rotate-180');
-                } else {
-                    directoryContent.style.maxHeight = '0px';
-                    directoryChevron.classList.add('rotate-180');
-                    clearSearch();
-                }
-            }
-        });
-        
-        setTimeout(() => {
-            directoryContent.style.maxHeight = directoryContent.scrollHeight + "px";
-            directoryChevron.classList.remove('rotate-180');
-        }, 300);
+        // Restore search panel state visually
+        const directoryContent = document.getElementById('directory-content');
+        const directoryChevron = document.getElementById('directory-chevron');
+        if (isSearchPanelOpen) {
+            setTimeout(() => {
+                directoryContent.style.maxHeight = directoryContent.scrollHeight + "px";
+                directoryChevron.classList.remove('rotate-180');
+            }, 10);
+        } else {
+            directoryContent.style.maxHeight = '0px';
+            directoryChevron.classList.add('rotate-180');
+        }
     }
     
     // Initialize the application

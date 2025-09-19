@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive MySQL Learning Roadmap</title>
+    <title>Interactive Learning Roadmap</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
@@ -20,51 +20,44 @@
             --link-stroke: #cbd5e1;
             --hover-stroke: #4f46e5;
             --searched-stroke: #f59e0b;
-            --glass-bg: rgba(255, 255, 255, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.2);
-            --glass-header-text: #1e293b;
-            --glass-body-text: #475569;
+            --glass-bg: rgba(255, 255, 255, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.25);
+            --glass-header-text: #1c1c1e;
+            --glass-body-text: #3c3c3e;
             --input-bg: #ffffff;
             --input-border: #d1d5db;
             --input-text: #111827;
-            --result-hover-bg: #eef2f9;
+            --result-hover-bg: #f0f0f0;
             --button-text: #374151;
-            --button-hover-bg: rgba(255, 255, 255, 0.5);
-            --button-bg: rgba(255, 255, 255, 0.2);
+            --button-text-active: #1e293b;
+            --button-hover-bg: rgba(255, 255, 255, 0.6);
+            --button-bg: rgba(255, 255, 255, 0.3);
         }
 
         html.dark {
-            /* --- High Contrast Dark Theme --- */
-            --bg-color: #0d1117; /* Solid dark background */
-            --text-color-primary: #f0f6fc; /* Almost white text for max contrast */
-            
-            /* Nodes - Made significantly brighter */
-            --node-topic-bg: #30363d; /* Lighter gray for active topics */
-            --node-collapsed-bg: #21262d; /* Lighter gray for collapsed topics */
-            --node-leaf-bg: #034e71; /* A brighter, more saturated blue for commands */
-            --node-leaf-stroke: transparent; /* No border for leaf nodes in dark mode by default */
-            --node-leaf-text: #f0f6fc; /* White text on commands for readability */
-            --node-stroke: transparent; /* No border in dark mode by default */
-            
-            /* Links & Highlights - Made links much brighter */
-            --link-stroke: #8b949e; /* Brighter links, matching node borders */
-            --hover-stroke: #2563eb; /* A strong, vibrant blue for hover */
-            --searched-stroke: #f59e0b; /* Bright yellow for search */
-
-            /* UI Panes */
-            --glass-bg: #161b22; /* Dark gray, distinct from main BG */
-            --glass-border: #30363d; /* Subtle border */
-            --glass-header-text: #f0f6fc; /* Almost white header */
-            --glass-body-text: #c9d1d9; /* Lighter body text */
-            
-            /* Inputs & Buttons */
-            --input-bg: #0d1117; /* Same as main BG */
-            --input-border: #30363d; /* Matches glass border */
-            --input-text: #c9d1d9; /* Light text */
-            --result-hover-bg: #30363d;
+            --bg-color: #0d1117;
+            --text-color-primary: #f0f6fc;
+            --node-topic-bg: #30363d;
+            --node-collapsed-bg: #21262d;
+            --node-leaf-bg: #034e71;
+            --node-leaf-stroke: transparent;
+            --node-leaf-text: #f0f6fc;
+            --node-stroke: transparent;
+            --link-stroke: #8b949e;
+            --hover-stroke: #2563eb;
+            --searched-stroke: #f59e0b;
+            --glass-bg: rgba(28, 28, 30, 0.75);
+            --glass-border: rgba(60, 60, 62, 0.5);
+            --glass-header-text: #f5f5f7;
+            --glass-body-text: #cccccc;
+            --input-bg: #1c1c1e;
+            --input-border: #3c3c3e;
+            --input-text: #e0e0e0;
+            --result-hover-bg: #3c3c3e;
             --button-text: #c9d1d9;
-            --button-hover-bg: #ffffff1a; /* Faint white on hover */
-            --button-bg: transparent;
+            --button-text-active: #ffffff;
+            --button-hover-bg: rgba(255, 255, 255, 0.1);
+            --button-bg: rgba(255, 255, 255, 0.05);
         }
         
         body {
@@ -77,21 +70,19 @@
         }
 
         html.dark body {
-             /* In dark mode, we don't want the dotted pattern, just the solid background color. */
             background-image: none;
             background-color: #0F0F0F;
         }
 
-        /* --- Node Styling --- */
         .node .node-content {
             transition: transform 0.2s ease-in-out;
         }
         .node:hover .node-content {
-            transform: translateY(-3px); /* Subtle lift effect */
+            transform: translateY(-3px);
         }
         .node rect {
             cursor: pointer;
-            rx: 6; /* Rounded corners */
+            rx: 6;
             stroke-width: 1.5px;
             stroke: var(--node-stroke);
             transition: stroke 0.2s ease-in-out, filter 0.2s ease-in-out, fill 0.3s ease-in-out;
@@ -101,13 +92,9 @@
         .node.collapsed-node rect { fill: var(--node-collapsed-bg); }
         .node.leaf-node rect { fill: var(--node-leaf-bg); stroke: var(--node-leaf-stroke);}
 
-        .node:hover rect {
+        .node:hover rect, .node.node--ancestor-highlight rect {
             stroke: var(--hover-stroke);
             filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
-        }
-
-        .node.node--ancestor-highlight rect {
-            stroke: var(--hover-stroke);
         }
 
         .node.node--expanded-highlight rect {
@@ -130,23 +117,17 @@
             fill: var(--node-leaf-text);
         }
 
-        /* --- Link Styling --- */
         .link {
             fill: none;
             stroke: var(--link-stroke);
             stroke-width: 1px;
             transition: stroke 0.3s ease-in-out, stroke-width 0.3s ease-in-out;
         }
-        .link.link--hover {
-            stroke: var(--hover-stroke);
-            stroke-width: 1.5px;
-        }
-        .link.link--expanded-highlight {
+        .link.link--hover, .link.link--expanded-highlight {
             stroke: var(--hover-stroke);
             stroke-width: 1.5px;
         }
 
-        /* --- UI Elements --- */
         .glass-ui {
             background-color: var(--glass-bg);
             backdrop-filter: blur(12px);
@@ -162,7 +143,6 @@
             user-select: none;
         }
 
-        /* --- Search & Highlight Styling --- */
         .node.node--searched rect {
             stroke: var(--searched-stroke);
             stroke-width: 3px;
@@ -186,6 +166,75 @@
         #search-results .result-item:hover {
             background-color: var(--result-hover-bg);
         }
+
+        /* Module Switcher Styles */
+        #module-switcher {
+            display: flex;
+            background-color: var(--button-bg);
+            border-radius: 0.5rem;
+            padding: 2px;
+            position: relative;
+        }
+        #module-switcher button {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--button-text);
+            transition: color 0.3s ease-in-out;
+            z-index: 2;
+        }
+        #module-switcher button.active {
+            color: var(--button-text-active);
+        }
+        #switch-slider {
+            position: absolute;
+            top: 2px;
+            bottom: 2px;
+            border-radius: 0.375rem;
+            background-color: var(--glass-bg);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), width 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            z-index: 1;
+        }
+
+        /* Genie Animation Styles */
+        @keyframes genie-out {
+            0% {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+                clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
+            }
+            100% {
+                transform: scale(0.1) translateY(100vh);
+                opacity: 0;
+                clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0% 100%);
+            }
+        }
+
+        @keyframes genie-in {
+            0% {
+                transform: scale(0.1) translateY(100vh);
+                opacity: 0;
+                clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0% 100%);
+            }
+            100% {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+                clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
+            }
+        }
+
+        .mindmap-exit-active {
+            transform-origin: bottom left;
+            animation: genie-out 0.4s forwards cubic-bezier(0.5, 0, 1, 0.5);
+        }
+
+        .mindmap-enter-active {
+            transform-origin: bottom left;
+            animation: genie-in 0.4s forwards cubic-bezier(0, 0.5, 0.5, 1);
+        }
+
     </style>
      <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -195,7 +244,6 @@
     <div id="mindmap-container" class="w-screen h-screen"></div>
 
     <!-- UI Widgets Container -->
-    <!-- Directory Search Widget -->
     <div id="directory-widget" class="absolute top-4 right-4 z-10 glass-ui rounded-lg max-w-sm w-11/12 sm:w-auto">
         <div id="directory-header" class="p-4 flex justify-between items-center cursor-move">
             <h2 class="text-lg font-semibold text-slate-800" style="color: var(--glass-header-text)">Directory Search</h2>
@@ -203,718 +251,244 @@
         </div>
         <div id="directory-content" class="text-sm text-slate-600 overflow-hidden transition-all duration-500 ease-in-out" style="max-height: 0px;">
             <div class="px-4 pb-4 border-t" style="border-color: var(--glass-border)">
-                <input type="search" id="search-input" placeholder="Search for a topic..." class="mt-3 w-full p-2 rounded-md focus:ring-indigo-500 focus:border-indigo-500" style="background-color: var(--input-bg); border: 1px solid var(--input-border); color: var(--input-text);">
+                <input type="search" id="search-input" placeholder="Search for a command or concept..." class="mt-3 w-full p-2 rounded-md focus:ring-indigo-500 focus:border-indigo-500" style="background-color: var(--input-bg); border: 1px solid var(--input-border); color: var(--input-text);">
                 <div id="search-results" class="mt-2 max-h-64 overflow-y-auto"></div>
             </div>
         </div>
     </div>
-
-    <!-- Instructions Widget -->
-    <div id="instructions-widget" class="absolute top-48 right-4 z-10 glass-ui rounded-lg max-w-sm w-11/12 sm:w-auto">
-        <div id="instructions-header" class="p-4 flex justify-between items-center cursor-move">
-            <h2 class="text-lg font-semibold text-slate-800" style="color: var(--glass-header-text)">Instructions</h2>
-            <svg id="instructions-chevron" class="w-5 h-5 text-gray-600 transform transition-transform duration-300" style="color: var(--glass-body-text)" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-        </div>
-        <div id="instructions-content" class="text-sm text-slate-600 space-y-2 overflow-hidden transition-all duration-500 ease-in-out" style="color: var(--glass-body-text)">
-            <div class="px-4 pb-4 border-t" style="border-color: var(--glass-border)">
-                <p class="pt-2"><span class="font-semibold" style="color: var(--glass-header-text)">Click Node:</span> Toggles child topics visibility.</p>
-                <p><span class="font-semibold" style="color: var(--glass-header-text)">Pan & Zoom:</span> Drag background or use scroll wheel.</p>
-                <p><span class="font-semibold" style="color: var(--glass-header-text)">Search:</span> Use the directory to find and focus on nodes.</p>
-                <p><span class="font-semibold" style="color: var(--glass-header-text)">Hover:</span> Highlight a node and its connections.</p>
-                <p><span class="font-semibold" style="color: var(--glass-header-text)">Draggable UI:</span> All info panels can be moved around.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Dark Mode Toggle -->
-    <div class="absolute bottom-4 left-4 z-10 glass-ui p-1.5 rounded-lg">
+    
+    <div id="ui-controls-container" class="absolute bottom-4 left-4 z-10 glass-ui p-1.5 rounded-lg flex items-center space-x-2">
         <button id="dark-mode-toggle" class="p-2 rounded-md transition-colors" style="--button-hover-bg-light: #ffffff80; --button-hover-bg-dark: #00000033;" onmouseover="this.style.backgroundColor = document.documentElement.classList.contains('dark') ? 'var(--button-hover-bg)' : 'var(--button-hover-bg-light)'" onmouseout="this.style.backgroundColor = 'transparent'">
-            <svg id="theme-icon-light" class="w-6 h-6 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            <svg id="theme-icon-light" class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
             <svg id="theme-icon-dark" class="w-6 h-6 text-slate-200 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
         </button>
+        <div id="module-switcher" class="flex items-center">
+            <div id="switch-slider"></div>
+            <button id="git-btn">Git</button>
+            <button id="mysql-btn">MySQL</button>
+        </div>
     </div>
 
-    <!-- Control Buttons -->
+
     <div id="controls-widget" class="absolute bottom-4 right-4 z-10 glass-ui p-1.5 rounded-lg cursor-move">
         <button id="collapse-all-btn" class="px-4 py-2 rounded-md font-semibold transition-colors" style="color: var(--button-text); background-color: var(--button-bg);" onmouseover="this.style.backgroundColor = 'var(--button-hover-bg)'" onmouseout="this.style.backgroundColor = 'var(--button-bg)'">Collapse All</button>
     </div>
 
+    <!-- Scripts are moved to the end of the body for reliable execution order -->
+    <script src="./git_data.js"></script>
+    <script src="./mysql_data.js"></script>
     <script>
-        const data = {
-            "name": "Complete MySQL Learning Roadmap",
-            "attributes": { "version": "2025-09-17-exhaustive-granular" },
-            "children": [
-                 {
-                "name": "Introduction and Setup",
-                "children": [{ "name": "What is MySQL? Overview and RDBMS concepts", "children": [{"name":"A popular open-source Relational Database Management System (RDBMS)"}, {"name": "It uses Structured Query Language (SQL) to manage data."}] }, 
-                { "name": "MySQL Editions (Community, Standard, Enterprise)", "children": [{"name":"Community: Free, open-source version, ideal for learning & most apps."}, {"name": "Enterprise: Paid, includes 24/7 support & advanced security features."}]},
-                { "name": "Install MySQL server & MySQL Workbench (or CLI)", "children": [
-                    {"name": "sudo apt install mysql-server", "children": [{"name": "# Installs on Debian/Ubuntu systems"}, {"name": "# Follow prompts for root password setup"}]}, 
-                    {"name": "brew install mysql", "children": [{"name": "# Installs on macOS via Homebrew"}, {"name": "# Run `brew update` first for latest version"}]}, 
-                    {"name": "Download MySQL installer (Windows)", "children": [{"name": "# Use the official MySQL Installer from dev.mysql.com"}, {"name": "# Workbench is often bundled"}]}
-                ] },
-                { "name": "Connect to MySQL server", "children": [
-                    {"name": "mysql -u username -p", "children": [{"name": "mysql -u root -p"}, {"name": "mysql -u app_user -p"}]}, 
-                    {"name": "mysql -u username -p -h host -P 3306", "children": [{"name": "mysql -u admin -p -h db.example.com"}, {"name": "mysql -u user1 -p -h 127.0.0.1 -P 3307"}]}, 
-                    {"name": "mysql --protocol=socket -u root -p", "children": [{"name":"# Connects via Unix socket file for local connections"}, {"name": "# Faster than TCP/IP for local access"}]}
-                ] },
-                { "name": "Basic client commands", "children": [
-                    {"name": "exit;", "children": [{"name": "# Closes the MySQL client session"}, {"name": "mysql> exit;"}]},
-                    {"name": "quit;", "children": [{"name": "# Also closes the session, synonym for exit"}, {"name": "mysql> quit;"}]},
-                    {"name": "\\? or help", "children": [{"name": "help;"}, {"name": "help contents;"}]}, 
-                    {"name": "status;", "children": [{"name":"# Shows server status, connection info, etc."}, {"name":"status;"}]}, 
-                    {"name": "\\s", "children": [{"name":"# Short command for status"}, {"name":"\\s"}]},
-                    {"name": "source file.sql;", "children": [{"name": "source /home/user/schema.sql;"}, {"name": "source C:\\Users\\Admin\\Desktop\\data.sql;"}]}, 
-                    {"name": "pager less -S", "children": [{"name": "# Sets 'less' to handle long query outputs"}, {"name": "# '-S' option disables line wrapping"}]}, 
-                    {"name": "nopager;", "children": [{"name": "# Disables the pager, prints all output"}, {"name": "# Useful for scripting or small results"}]}
-                ] },
-                { "name": "Server Configuration Files (my.cnf / my.ini)", "children": [{"name":"Main config file, located in /etc/mysql/my.cnf on Linux"}, {"name": "Example: `innodb_buffer_pool_size = 2G` tunes memory usage."}] }]
-            }, {
-                "name": "Basic Database Operations",
-                "children": [{ "name": "CREATE DATABASE", "children": [
-                    {"name": "CREATE DATABASE dbname;", "children": [{"name": "CREATE DATABASE sales_db;"}, {"name": "CREATE DATABASE `user-management`;"}]}, 
-                    {"name": "CREATE DATABASE IF NOT EXISTS dbname;", "children": [{"name": "CREATE DATABASE IF NOT EXISTS logs;"}, {"name": "CREATE DATABASE IF NOT EXISTS staging_db;"}]}
-                ] }, 
-                { "name": "SHOW DATABASES", "children": [
-                    {"name": "SHOW DATABASES;", "children": [{"name": "SHOW DATABASES;"}, {"name": "SHOW SCHEMAS; /* Synonym */"}]},
-                    {"name": "SHOW DATABASES LIKE 'pattern%';", "children": [{"name": "SHOW DATABASES LIKE 'prod%';"}, {"name": "SHOW DATABASES LIKE '%db';"}]}
-                ]},
-                { "name": "SHOW CREATE DATABASE", "children": [
-                    {"name": "SHOW CREATE DATABASE dbname;", "children": [{"name": "SHOW CREATE DATABASE sales_db;"}, {"name":"SHOW CREATE DATABASE `user-management`;"}]}
-                ]},
-                { "name": "USE database", "children": [
-                    {"name": "USE dbname;", "children": [{"name": "USE sales_db;"}, {"name": "USE information_schema;"}]}, 
-                    {"name": "SELECT DATABASE();", "children": [{"name":"-- To verify the currently selected database"}, {"name": "SELECT DATABASE();"}]}
-                ]},
-                { "name": "ALTER DATABASE", "children": [
-                    {"name": "ALTER DATABASE dbname CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;", "children": [{"name":"ALTER DATABASE sales_db CHARACTER SET = utf8mb4;"}, {"name": "ALTER DATABASE logs COLLATE = utf8mb4_general_ci;"}]}
-                ]},
-                { "name": "DROP DATABASE", "children": [
-                    {"name": "DROP DATABASE dbname;", "children": [{"name": "DROP DATABASE old_project;"}, {"name": "DROP DATABASE test_db;"}]}, 
-                    {"name": "DROP DATABASE IF EXISTS dbname;", "children": [{"name":"DROP DATABASE IF EXISTS temp_data;"}, {"name":"DROP DATABASE IF EXISTS archived_logs;"}]}
-                ] }]
-            }, {
-                "name": "Table Basics",
-                "children": [{ "name": "CREATE TABLE", "children": [
-                    {"name": "CREATE TABLE tablename (col1 DATATYPE, col2 DATATYPE, ...);", "children": [{"name": "CREATE TABLE users (id INT, name VARCHAR(100));"}, {"name": "CREATE TABLE products (sku VARCHAR(50), price DECIMAL(10,2));"}]}, 
-                    {"name": "CREATE TABLE IF NOT EXISTS tablename (...);", "children": [{"name": "CREATE TABLE IF NOT EXISTS logs (msg TEXT, ts TIMESTAMP);"}, {"name": "CREATE TABLE IF NOT EXISTS sessions (id VARCHAR(255), data BLOB);"}]}, 
-                    {"name": "CREATE TABLE t AS SELECT ...;", "children": [{"name": "CREATE TABLE users_backup AS SELECT * FROM users;"}, {"name": "CREATE TABLE high_value_orders AS SELECT * FROM orders WHERE amount > 1000;"}]}
-                ] },
-                { "name": "SHOW TABLES", "children": [
-                    {"name": "SHOW TABLES;", "children": [{"name":"USE sales_db; SHOW TABLES;"}, {"name": "SHOW TABLES FROM mysql;"}]},
-                    {"name": "SHOW FULL TABLES;", "children": [{"name":"-- Shows table type (BASE TABLE or VIEW)"}, {"name": "SHOW FULL TABLES FROM employees;"}]}
-                ]},
-                { "name": "Describe Table Structure", "children": [
-                    {"name": "DESCRIBE tablename; (DESC)", "children": [{"name": "DESCRIBE users;"}, {"name": "DESC products;"}]}, 
-                    {"name": "SHOW CREATE TABLE tablename;", "children": [{"name": "SHOW CREATE TABLE users;"}, {"name": "SHOW CREATE TABLE products;"}]}
-                ]},
-                { "name": "ALTER TABLE (DDL changes)", "children": [
-                    {"name": "ADD COLUMN col DATATYPE", "children": [{"name":"ALTER TABLE users ADD COLUMN last_login_ip VARCHAR(45);"}, {"name":"ALTER TABLE products ADD COLUMN weight_kg DECIMAL(5,2);"}]}, 
-                    {"name": "DROP COLUMN col", "children": [{"name":"ALTER TABLE users DROP COLUMN old_address;"}, {"name":"ALTER TABLE products DROP COLUMN temp_notes;"}]}, 
-                    {"name": "MODIFY COLUMN col DATATYPE", "children": [{"name":"ALTER TABLE users MODIFY COLUMN name VARCHAR(150);"}, {"name":"ALTER TABLE products MODIFY COLUMN price DECIMAL(12,2);"}]}, 
-                    {"name": "CHANGE COLUMN old_name new_name DATATYPE", "children": [{"name":"ALTER TABLE users CHANGE COLUMN name full_name VARCHAR(150);"}, {"name":"ALTER TABLE products CHANGE COLUMN sku product_sku VARCHAR(60);"}]}, 
-                    {"name": "RENAME COLUMN old_name TO new_name (MySQL 8+)", "children": [{"name":"ALTER TABLE users RENAME COLUMN email TO email_address;"}, {"name":"ALTER TABLE products RENAME COLUMN name TO product_name;"}]},
-                    {"name": "RENAME TO new_table_name", "children": [{"name":"ALTER TABLE users RENAME TO customers;"}, {"name":"ALTER TABLE products RENAME TO inventory;"}]}, 
-                    {"name": "ADD CONSTRAINT ...", "children": [{"name":"ALTER TABLE orders ADD CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id);"}, {"name":"ALTER TABLE products ADD CONSTRAINT chk_price CHECK (price > 0);"}]}, 
-                    {"name": "DROP CONSTRAINT ...", "children": [{"name":"ALTER TABLE orders DROP FOREIGN KEY fk_user;"}, {"name":"ALTER TABLE products DROP CHECK chk_price;"}]}
-                ]},
-                { "name": "GENERATED COLUMNS (Stored/Virtual)", "children": [{"name":"fullName VARCHAR(255) AS (CONCAT(firstName, ' ', lastName))"}, {"name":"priceWithTax DECIMAL(10,2) AS (price * 1.05) STORED"}]},
-                { "name": "DROP TABLE", "children": [
-                    {"name": "DROP TABLE tablename;", "children": [{"name":"DROP TABLE temp_users;"}, {"name":"DROP TABLE old_logs;"}]}, 
-                    {"name": "DROP TABLE IF EXISTS tablename;", "children": [{"name":"DROP TABLE IF EXISTS customers_backup;"}, {"name":"DROP TABLE IF EXISTS `2023_sales_archive`;"}]}
-                ]},
-                { "name": "TRUNCATE TABLE", "children": [
-                    {"name": "TRUNCATE TABLE tablename;", "children": [{"name":"TRUNCATE TABLE staging_uploads;"}, {"name":"TRUNCATE TABLE logs;"}]}
-                ]}
-                ]
-            }, {
-                "name": "Data Types Overview", "children": [
-                { "name": "Numeric types", "children": [
-                    { "name": "Integer Types", "children": [
-                        {"name": "INT / INTEGER", "children": [{"name":"user_id INT PRIMARY KEY"}, {"name":"product_count INTEGER DEFAULT 0"}]},
-                        {"name": "TINYINT", "children": [{"name":"is_active TINYINT(1)"}, {"name":"age TINYINT UNSIGNED /* 0 to 255 */"}]},
-                        {"name": "SMALLINT", "children": [{"name":"category_id SMALLINT"}, {"name":"year_published SMALLINT UNSIGNED"}]},
-                        {"name": "MEDIUMINT", "children": [{"name":"view_count MEDIUMINT"}, {"name":"zip_code MEDIUMINT UNSIGNED"}]},
-                        {"name": "BIGINT", "children": [{"name":"world_population BIGINT"}, {"name":"transaction_id BIGINT UNSIGNED"}]}
-                    ]},
-                    {"name": "DECIMAL(precision,scale)", "children": [{"name":"price DECIMAL(10, 2)"}, {"name":"latitude DECIMAL(9, 6)"}]},
-                    { "name": "Floating-Point Types", "children": [
-                        {"name": "FLOAT", "children": [{"name":"score FLOAT"}, {"name":"avg_rating FLOAT(3,2)"}]},
-                        {"name": "DOUBLE", "children": [{"name":"measurement DOUBLE"}, {"name":"scientific_value DOUBLE PRECISION"}]}
-                    ]},
-                    {"name": "BIT(n)", "children": [{"name":"flags BIT(8) /* for 8 flags */"}, {"name":"is_active BIT(1)"}]}
-                ]},
-                { "name": "String types", "children": [
-                    {"name": "CHAR(n)", "children": [{"name":"country_code CHAR(2)"}, {"name":"state CHAR(2)"}]},
-                    {"name": "VARCHAR(n)", "children": [{"name":"name VARCHAR(100)"}, {"name":"email VARCHAR(255)"}]},
-                    { "name": "Large Text Types", "children": [
-                        {"name": "TINYTEXT", "children": [{"name":"short_comment TINYTEXT /* Max 255 chars */"}, {"name":"tweet TINYTEXT"}]},
-                        {"name": "TEXT", "children": [{"name":"blog_post TEXT /* Max 64KB */"}, {"name":"article_body TEXT"}]},
-                        {"name": "MEDIUMTEXT", "children": [{"name":"book_chapter MEDIUMTEXT /* Max 16MB */"}, {"name":"session_data MEDIUMTEXT"}]},
-                        {"name": "LONGTEXT", "children": [{"name":"legal_document LONGTEXT /* Max 4GB */"}, {"name":"full_log_data LONGTEXT"}]}
-                    ]},
-                    {"name": "ENUM('val1', 'val2', ...)", "children": [{"name":"status ENUM('pending', 'approved', 'rejected')"}, {"name":"priority ENUM('low', 'medium', 'high')"}]},
-                    {"name": "SET('val1', 'val2', ...)", "children": [{"name":"permissions SET('read', 'write', 'execute')"}, {"name":"toppings SET('cheese', 'pepperoni', 'mushrooms')"}]}
-                ]},
-                { "name": "Date and Time types", "children": [
-                    {"name": "DATE", "children": [{"name":"birth_date DATE"}, {"name":"order_date DATE"}]},
-                    {"name": "DATETIME", "children": [{"name":"event_start DATETIME"}, {"name":"created_at DATETIME"}]},
-                    {"name": "TIMESTAMP (auto-updating)", "children": [{"name":"last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"}, {"name":"created_at TIMESTAMP DEFAULT NOW()"}]},
-                    {"name": "TIME", "children": [{"name":"opening_hour TIME"}, {"name":"appointment_time TIME"}]},
-                    {"name": "YEAR", "children": [{"name":"model_year YEAR"}, {"name":"publication_year YEAR"}]}
-                ]},
-                { "name": "Binary & Other types", "children": [
-                    {"name": "BOOLEAN or TINYINT(1)", "children": [{"name":"is_active BOOLEAN"}, {"name":"has_paid TINYINT(1)"}]},
-                    { "name": "Binary Large Objects (BLOBs)", "children": [
-                        {"name": "TINYBLOB", "children": [{"name":"thumbnail TINYBLOB /* Max 255 bytes */"}, {"name":"small_icon TINYBLOB"}]},
-                        {"name": "BLOB", "children": [{"name":"profile_picture BLOB /* Max 64KB */"}, {"name":"medium_image BLOB"}]},
-                        {"name": "MEDIUMBLOB", "children": [{"name":"audio_file MEDIUMBLOB /* Max 16MB */"}, {"name":"short_video MEDIUMBLOB"}]},
-                        {"name": "LONGBLOB", "children": [{"name":"file_content LONGBLOB /* Max 4GB */"}, {"name":"backup_data LONGBLOB"}]}
-                    ]}
-                ]},
-                { "name": "JSON data type (MySQL 5.7+)", "children": [
-                    {"name": "COLUMN json_col JSON", "children": [{"name":"attributes JSON"}, {"name":"metadata JSON"}]}
-                ]},
-                { "name": "Spatial data types (GIS)", "children": [
-                    {"name": "GEOMETRY", "children": [{"name":"shape GEOMETRY"}, {"name":"area GEOMETRY"}]},
-                    {"name": "POINT", "children": [{"name":"location POINT"}, {"name":"store_coords POINT"}]},
-                    {"name": "LINESTRING", "children": [{"name":"route LINESTRING"}, {"name":"river_path LINESTRING"}]},
-                    {"name": "POLYGON", "children": [{"name":"delivery_zone POLYGON"}, {"name":"property_boundary POLYGON"}]}
-                ]},
-                { "name": "Character Sets and Collations", "children": [
-                    {"name": "Character Set (e.g. utf8mb4)", "children": [{"name":"-- Handles full Unicode, including emojis"}, {"name":"CREATE DATABASE db CHARACTER SET utf8mb4;"}]},
-                    {"name": "Collation (e.g. utf8mb4_unicode_ci)", "children": [{"name":"-- `_ci` means case-insensitive sorting"}, {"name":"CREATE TABLE t (col VARCHAR(255) COLLATE utf8mb4_bin); /* binary/case-sensitive */"}]},
-                    {"name": "Setting on server, db, table, column", "children": [{"name":"-- Best practice: Set at database level"}, {"name":"-- Override at column level for specific needs"}]}
-                ]}
-                ]
-            }, {
-                "name": "Basic Data Manipulation (DML)",
-                "children": [{ "name": "INSERT", "children": [
-                    {"name": "INSERT INTO tablename (col1, col2) VALUES (val1, val2);", "children": [{"name":"INSERT INTO users (name, email) VALUES ('John Doe', 'john.doe@example.com');"}, {"name":"INSERT INTO products (sku, price) VALUES ('A-123', 99.99);"}]},
-                    {"name": "INSERT INTO tablename VALUES (val1, val2, ...);", "children": [{"name":"INSERT INTO users VALUES (1, 'Jane Smith', 'jane.s@example.com', NOW());"}, {"name":"-- Requires values for ALL columns in order"}]},
-                    {"name": "INSERT INTO t (c1, c2) SELECT cA, cB FROM other;", "children": [{"name":"INSERT INTO customers (name) SELECT user_name FROM old_users;"}, {"name":"INSERT INTO archive (id, data) SELECT id, data FROM logs WHERE date < '2023-01-01';"}]},
-                    {"name": "INSERT IGNORE ...", "children": [{"name":"-- Prevents errors on duplicate unique keys, just skips the row"}, {"name":"INSERT IGNORE INTO emails (email) VALUES ('test@example.com');"}]},
-                    {"name": "REPLACE INTO ...", "children": [{"name":"-- Deletes and re-inserts a row if a unique key matches"}, {"name":"REPLACE INTO user_settings (user_id, theme) VALUES (1, 'dark');"}]},
-                    {"name": "INSERT ... ON DUPLICATE KEY UPDATE ...", "children": [{"name":"INSERT INTO scores (user_id, score) VALUES(1, 100) ON DUPLICATE KEY UPDATE score = score + 100;"}, {"name":"-- Preferred way to upsert data"}]}
-                ] },
-                { "name": "SELECT", "children": [
-                    {"name": "SELECT * FROM tablename;", "children": [{"name":"SELECT * FROM users;"}, {"name":"SELECT * FROM products;"}]},
-                    {"name": "SELECT col1, col2 FROM tablename WHERE ...;", "children": [{"name":"SELECT name, email FROM users WHERE id = 1;"}, {"name":"SELECT sku, price FROM products WHERE is_active = TRUE;"}]},
-                    {"name": "SELECT DISTINCT col FROM tablename;", "children": [{"name":"SELECT DISTINCT country FROM users;"}, {"name":"SELECT DISTINCT category FROM products;"}]}
-                ] },
-                { "name": "UPDATE", "children": [
-                    {"name": "UPDATE tablename SET col1 = val1 WHERE condition;", "children": [{"name":"UPDATE users SET email = 'new.email@example.com' WHERE id = 1;"}, {"name":"UPDATE products SET price = 49.99 WHERE sku = 'B-456';"}]},
-                    {"name": "UPDATE tablename SET col = col + 1 WHERE ...;", "children": [{"name":"UPDATE products SET stock = stock - 1 WHERE id = 10;"}, {"name":"UPDATE users SET login_count = login_count + 1 WHERE id = 5;"}]}
-                ] },
-                { "name": "DELETE vs TRUNCATE", "children": [
-                    {"name": "DELETE FROM tablename WHERE condition;", "children": [{"name":"DELETE FROM logs WHERE log_date < '2024-01-01';"}, {"name":"DELETE FROM users WHERE is_active = 0;"}]},
-                    {"name": "TRUNCATE TABLE tablename; (faster, resets auto-increment)", "children": [{"name":"TRUNCATE TABLE staging_data;"}, {"name":"TRUNCATE TABLE sessions;"}]}
-                ] }]
-            }, {
-                "name": "Filtering and Sorting Data",
-                "children": [{ "name": "WHERE clause", "children": [
-                    {"name": "SELECT * FROM t WHERE col = 1;", "children": [{"name":"SELECT * FROM products WHERE category_id = 5;"}, {"name":"SELECT * FROM users WHERE status = 'active';"}]},
-                    {"name": "SELECT * FROM t WHERE col <> 1 OR col != 1;", "children": [{"name":"SELECT * FROM users WHERE country <> 'USA';"}, {"name":"SELECT * FROM orders WHERE status != 'shipped';"}]}
-                ] },
-                { "name": "Comparison Operators", "children": [
-                    {"name": "= (Equal)", "children": [{"name":"WHERE status = 'shipped'"}, {"name":"WHERE user_id = 101"}]},
-                    {"name": "<> or != (Not Equal)", "children": [{"name":"WHERE status <> 'shipped'"}, {"name":"WHERE user_id != 101"}]},
-                    {"name": "> (Greater than)", "children": [{"name":"WHERE price > 99.99"}, {"name":"WHERE quantity > 0"}]},
-                    {"name": "< (Less than)", "children": [{"name":"WHERE price < 10.00"}, {"name":"WHERE stock < 5"}]},
-                    {"name": ">= (Greater than or equal)", "children": [{"name":"WHERE price >= 50.00"}, {"name":"WHERE rating >= 4.5"}]},
-                    {"name": "<= (Less than or equal)", "children": [{"name":"WHERE price <= 100.00"}, {"name":"WHERE discount <= 0.5"}]}
-                ]},
-                { "name": "Value Range & Set Operators", "children": [
-                    {"name": "BETWEEN", "children": [{"name":"WHERE price BETWEEN 50 AND 100;"}, {"name":"WHERE order_date BETWEEN '2024-01-01' AND '2024-01-31';"}]},
-                    {"name": "NOT BETWEEN", "children": [{"name":"WHERE price NOT BETWEEN 50 AND 100;"}, {"name":"WHERE user_id NOT BETWEEN 1000 AND 2000;"}]},
-                    {"name": "IN (...)", "children": [{"name":"WHERE category IN ('electronics', 'books', 'home');"}, {"name":"WHERE user_id IN (1, 5, 12);"}]},
-                    {"name": "NOT IN (...)", "children": [{"name":"WHERE category NOT IN ('clothing', 'toys');"}, {"name":"WHERE status NOT IN ('cancelled', 'returned');"}]}
-                ]},
-                { "name": "Pattern Matching Operators", "children": [
-                    {"name": "LIKE (Wildcards: %, _)", "children": [{"name":"WHERE email LIKE '%@gmail.com';"}, {"name":"WHERE sku LIKE 'AB-_ _ _-X';"}]},
-                    {"name": "REGEXP 'regex'", "children": [{"name":"WHERE phone_number REGEXP '^[0-9]{10}$';"}, {"name":"WHERE name REGEXP '^J(a|o)ne?';"}]},
-                    {"name": "SOUNDS LIKE", "children": [{"name":"WHERE last_name SOUNDS LIKE 'Smith'; /* Matches Smyth */"}, {"name":"WHERE first_name SOUNDS LIKE 'Jon';"}]}
-                ]},
-                 { "name": "NULL Value Operators", "children": [
-                    {"name": "IS NULL", "children": [{"name":"WHERE shipped_date IS NULL;"}, {"name":"WHERE middle_name IS NULL;"}]},
-                    {"name": "IS NOT NULL", "children": [{"name":"WHERE email IS NOT NULL;"}, {"name":"WHERE updated_at IS NOT NULL;"}]}
-                ]},
-                { "name": "Logical operators", "children": [
-                    {"name": "AND", "children": [{"name":"WHERE country = 'USA' AND state = 'CA';"}, {"name":"WHERE price > 100 AND stock > 0;"}]},
-                    {"name": "OR", "children": [{"name":"WHERE is_admin = 1 OR is_editor = 1;"}, {"name":"WHERE status = 'shipped' OR status = 'delivered';"}]},
-                    {"name": "NOT", "children": [{"name":"WHERE NOT country = 'USA';"}, {"name":"WHERE email IS NOT NULL;"}]},
-                    {"name": "XOR", "children": [{"name":"-- Logical exclusive OR"}, {"name":"SELECT 1 XOR 1, 1 XOR 0, 0 XOR 1, 0 XOR 0; /* 0, 1, 1, 0 */"}]}
-                ] },
-                { "name": "ORDER BY", "children": [
-                    {"name": "ORDER BY col1 ASC, col2 DESC", "children": [{"name":"ORDER BY last_name ASC, first_name ASC;"}, {"name":"ORDER BY order_date DESC, total_price DESC;"}]},
-                    {"name": "ORDER BY FIELD(col, 'v1', 'v2', ...)", "children": [{"name":"ORDER BY FIELD(status, 'pending', 'processing', 'shipped');"}, {"name":"ORDER BY FIELD(priority, 'high', 'medium', 'low');"}]}
-                ] },
-                { "name": "LIMIT and OFFSET", "children": [
-                    {"name": "LIMIT n", "children": [{"name":"SELECT * FROM products ORDER BY price DESC LIMIT 10;"}, {"name":"SELECT * FROM articles ORDER BY published_date DESC LIMIT 5;"}]},
-                    {"name": "LIMIT n OFFSET x", "children": [{"name":"-- For pagination: page 3 with 10 items per page"}, {"name":"SELECT * FROM logs LIMIT 10 OFFSET 20;"}]},
-                    {"name": "LIMIT x, n", "children": [{"name":"-- Alternative syntax for LIMIT...OFFSET"}, {"name":"SELECT * FROM logs LIMIT 20, 10;"}]}
-                ] }]
-            }, {
-                 "name": "Aggregate Functions and Grouping",
-                "children": [{ "name": "Aggregate functions", "children": [
-                    {"name": "COUNT(col) / COUNT(*)", "children": [{"name":"SELECT COUNT(*) FROM users;"}, {"name":"SELECT COUNT(DISTINCT country) FROM users;"}]},
-                    {"name": "SUM(col)", "children": [{"name":"SELECT SUM(amount) FROM orders;"}, {"name":"SELECT SUM(quantity) FROM order_items WHERE product_id = 5;"}]},
-                    {"name": "AVG(col)", "children": [{"name":"SELECT AVG(price) FROM products;"}, {"name":"SELECT AVG(score) FROM user_ratings;"}]},
-                    {"name": "MIN(col)", "children": [{"name":"SELECT MIN(order_date) FROM orders;"}, {"name":"SELECT MIN(price) FROM products WHERE category = 'books';"}]},
-                    {"name": "MAX(col)", "children": [{"name":"SELECT MAX(order_date) FROM orders;"}, {"name":"SELECT MAX(price) FROM products;"}]},
-                    {"name": "GROUP_CONCAT(col)", "children": [{"name":"SELECT GROUP_CONCAT(product_name) FROM products GROUP BY category;"}, {"name":"SELECT GROUP_CONCAT(tag SEPARATOR ' | ') FROM tags;"}]},
-                    {"name": "STDDEV(col)", "children": [{"name":"SELECT STDDEV(price) FROM products;"}, {"name":"SELECT STD(order_total) FROM orders;"}]},
-                    {"name": "VARIANCE(col)", "children": [{"name":"SELECT VARIANCE(price) FROM products;"}, {"name":"SELECT VARIANCE(order_total) FROM orders;"}]}
-                ] },
-                { "name": "GROUP BY", "children": [
-                    {"name": "GROUP BY col1, col2", "children": [{"name":"SELECT country, COUNT(*) FROM users GROUP BY country;"}, {"name":"SELECT category, AVG(price) FROM products GROUP BY category;"}]},
-                    {"name": "GROUP BY col WITH ROLLUP", "children": [{"name":"-- Adds a summary row with the grand total"}, {"name":"SELECT country, COUNT(*) FROM users GROUP BY country WITH ROLLUP;"}]}
-                ] },
-                { "name": "HAVING", "children": [
-                    {"name": "HAVING COUNT(*) > 1", "children": [{"name":"SELECT email FROM users GROUP BY email HAVING COUNT(*) > 1;"}, {"name":"SELECT category, AVG(price) FROM products GROUP BY category HAVING AVG(price) > 100;"}]}
-                ] },
-                { "name": "DISTINCT", "children": [
-                    {"name": "SELECT DISTINCT col FROM t", "children": [{"name":"SELECT DISTINCT city FROM customers;"}, {"name":"SELECT COUNT(DISTINCT user_id) FROM logs;"}]}
-                ] }]
-            }, {
-                "name": "Advanced SELECT Statements",
-                "children": [{ "name": "Aliases", "children": [
-                    {"name": "SELECT col AS alias FROM t AS t1", "children": [{"name":"SELECT u.id, u.name FROM users AS u;"}, {"name":"SELECT p.product_name AS name, p.price AS cost FROM products p;"}]}
-                ] },
-                { "name": "Joins", "children": [
-                    {"name": "INNER JOIN", "children": [
-                        {"name": "SELECT * FROM a INNER JOIN b ON a.id = b.a_id;", "children": [{"name":"SELECT u.name, o.id FROM users u INNER JOIN orders o ON u.id = o.user_id;"}, {"name":"-- Get products and their category names"}]},
-                        {"name": "SELECT * FROM a JOIN b USING(common_col);", "children": [{"name":"SELECT * FROM products JOIN categories USING(category_id);"}, {"name":"-- Requires columns to have the same name"}]}
-                    ]}, 
-                    {"name": "LEFT JOIN (LEFT OUTER JOIN)", "children": [{"name":"-- Select all users and any orders they may have"}, {"name":"SELECT u.name, o.id FROM users u LEFT JOIN orders o ON u.id = o.user_id;"}]}, 
-                    {"name": "RIGHT JOIN (RIGHT OUTER JOIN)", "children": [{"name":"-- Select all orders and the user who placed them (if any)"}, {"name":"SELECT u.name, o.id FROM users u RIGHT JOIN orders o ON u.id = o.user_id;"}]}, 
-                    {"name": "FULL OUTER JOIN (via UNION)", "children": [{"name":"-- Not natively supported, emulated with LEFT and RIGHT JOINs"}, {"name":"SELECT ... FROM a LEFT JOIN b ... UNION SELECT ... FROM a RIGHT JOIN b ...;"}]}, 
-                    {"name": "CROSS JOIN", "children": [{"name":"-- Cartesian product: every row from table A with every row from table B"}, {"name":"SELECT u.name, p.name FROM users u CROSS JOIN products p;"}]}, 
-                    {"name": "NATURAL JOIN", "children": [{"name":"-- Joins on all columns with the same name, generally avoided"}, {"name":"SELECT * FROM products NATURAL JOIN categories;"}]}, 
-                    {"name": "SELF JOIN", "children": [{"name":"-- Find employees and their managers from the same table"}, {"name":"SELECT e.name, m.name FROM employees e JOIN employees m ON e.manager_id = m.id;"}]}
-                ] },
-                { "name": "Subqueries", "children": [
-                    {"name": "Scalar subquery", "children": [{"name":"SELECT name, (SELECT MAX(price) FROM products) FROM users;"}, {"name":"-- A subquery that returns a single value"}]},
-                    {"name": "Subquery in WHERE (IN, NOT IN, ANY, ALL)", "children": [{"name":"SELECT * FROM users WHERE id IN (SELECT user_id FROM orders);"}, {"name":"SELECT * FROM products WHERE price > ALL (SELECT price FROM products WHERE category = 'books');"}]},
-                    {"name": "Correlated subquery", "children": [{"name":"-- Find products with a price higher than the average for their category"}, {"name":"SELECT * FROM products p1 WHERE price > (SELECT AVG(price) FROM products p2 WHERE p2.category_id = p1.category_id);"}]},
-                    {"name": "EXISTS", "children": [{"name":"SELECT name FROM users u WHERE EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id);"}, {"name":"-- Often more efficient than IN"}]},
-                    {"name": "NOT EXISTS", "children": [{"name":"-- Find users who have NOT placed any orders"}, {"name":"SELECT name FROM users u WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id);"}]}
-                ] },
-                { "name": "UNION and UNION ALL", "children": [
-                    {"name": "SELECT col FROM a UNION SELECT col FROM b;", "children": [{"name":"-- Combines results and removes duplicates"}, {"name":"SELECT email FROM customers UNION SELECT email FROM prospects;"}]},
-                    {"name": "SELECT col FROM a UNION ALL SELECT col FROM b;", "children": [{"name":"-- Combines results and keeps all duplicates"}, {"name":"SELECT city FROM suppliers UNION ALL SELECT city FROM customers;"}]}
-                ] },
-                { "name": "INTERSECT and EXCEPT/MINUS (8.0.31+)", "children": [{"name":"SELECT id FROM a INTERSECT SELECT id FROM b;"}, {"name":"SELECT id FROM a EXCEPT SELECT id FROM b;"}]},
-                { "name": "Common Table Expressions (CTEs)", "children": [
-                    {"name": "Basic CTE: WITH cte AS (...)", "children": [{"name":"WITH active_users AS (SELECT * FROM users WHERE status = 'active') SELECT * FROM active_users;"}, {"name":"-- Improves readability of complex queries"}]},
-                    {"name": "Multiple CTEs", "children": [{"name":"WITH cte1 AS (...), cte2 AS (...) SELECT * FROM cte1 JOIN cte2 ...;"}, {"name":"-- Chain multiple CTEs together"}]},
-                    {"name": "Recursive CTE: WITH RECURSIVE ...", "children": [{"name":"-- Used for hierarchical data, like org charts"}, {"name":"WITH RECURSIVE employee_path (id, name, path) AS (...)"}]}
-                ] }]
-            }, {
-                 "name": "Keys and Indexes", "children": [
-                { "name": "Primary Key", "children": [
-                    {"name": "PRIMARY KEY (id)", "children": [{"name":"id INT PRIMARY KEY AUTO_INCREMENT"}, {"name":"-- Uniquely identifies each row, cannot be NULL"}]},
-                    {"name": "Composite Primary Key (col1, col2)", "children": [{"name":"PRIMARY KEY (order_id, product_id)"}, {"name":"-- Uniqueness is determined by the combination of columns"}]}
-                ]},
-                { "name": "Foreign Key", "children": [
-                    {"name": "FOREIGN KEY (col) REFERENCES othertable(id) ON DELETE CASCADE ON UPDATE CASCADE", "children": [{"name":"FOREIGN KEY (user_id) REFERENCES users(id)"}, {"name":"-- Enforces referential integrity (links between tables)"}]}
-                ]},
-                { "name": "Unique Key", "children": [
-                    {"name": "UNIQUE KEY (col)", "children": [{"name":"email VARCHAR(255) UNIQUE"}, {"name":"-- Ensures all values in the column are unique, allows one NULL"}]},
-                    {"name": "CREATE UNIQUE INDEX idx_name ON t(col);", "children": [{"name":"CREATE UNIQUE INDEX idx_email ON users(email);"}, {"name":"-- Another way to create a unique constraint"}]}
-                ]},
-                { "name": "Index Concepts", "children": [
-                    {"name": "B-Tree (Default)", "children": [{"name":"-- Efficient for range queries (>, <, BETWEEN)"}, {"name":"-- Used by default to speed up data retrieval"}]},
-                    {"name": "Hash Indexes (Memory Engine)", "children": [{"name":"-- Only useful for exact equality lookups (=)"}, {"name":"-- Not used for range queries"}]},
-                    {"name": "Full-text Indexes", "children": [
-                        {"name":"MATCH() ... AGAINST()", "children": [{"name":"MATCH(article_body) AGAINST('database performance');"}, {"name":"-- Used for natural language searches in text"}]}
-                    ]},
-                    {"name": "Spatial Indexes (R-Tree)", "children": [{"name":"-- Used for indexing geospatial data (points, polygons)"}, {"name":"-- Speeds up queries like 'find all points within this polygon'"}]}
-                ]},
-                { "name": "Index creation & management", "children": [
-                    {"name": "CREATE INDEX idx_name ON tablename(column);", "children": [{"name":"CREATE INDEX idx_lastname ON users(last_name);"}, {"name":"CREATE INDEX idx_product_category ON products(product_id, category_id);"}]},
-                    {"name": "DROP INDEX idx_name ON tablename;", "children": [{"name":"DROP INDEX idx_lastname ON users;"}, {"name":"ALTER TABLE products DROP INDEX idx_product_category;"}]},
-                    {"name": "SHOW INDEX FROM tablename;", "children": [{"name":"SHOW INDEX FROM users;"}, {"name":"SHOW KEYS FROM products;"}]}
-                ]},
-                { "name": "Advanced Index Types", "children": [
-                    {"name": "Invisible indexes", "children": [{"name":"ALTER TABLE users ALTER INDEX idx_email INVISIBLE;"}, {"name":"-- Optimizer ignores it, useful for testing index removal impact"}]},
-                    {"name": "Functional / Expression indexes", "children": [{"name":"CREATE INDEX idx_lower_email ON users((LOWER(email)));"}, {"name":"-- Index the result of a function or expression"}]},
-                    {"name": "Descending Indexes (MySQL 8+)", "children": [{"name":"CREATE INDEX idx_date_desc ON orders(order_date DESC);"}, {"name":"-- Optimizes queries that sort in descending order"}]},
-                    {"name": "Multi-column index", "children": [{"name":"CREATE INDEX idx_name ON users(last_name, first_name);"}, {"name":"-- Order of columns is very important for performance"}]},
-                    {"name": "Covering index", "children": [{"name":"-- An index containing all columns needed for a query"}, {"name":"-- Allows answering the query from the index alone (very fast)"}]}
-                ]}
-                ]
-            }, {
-                "name": "Data Integrity and Constraints", "children": [
-                    {"name": "NOT NULL", "children": [{"name":"email VARCHAR(255) NOT NULL"}, {"name":"-- Ensures a column cannot have a NULL value"}]},
-                    {"name": "DEFAULT value", "children": [{"name":"status VARCHAR(20) DEFAULT 'pending'"}, {"name":"created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"}]},
-                    {"name": "CHECK constraints (Enforced in 8.0.16+)", "children": [{"name":"price DECIMAL(10,2) CHECK (price > 0)"}, {"name":"age INT CHECK (age >= 18)"}]},
-                    {"name": "AUTO_INCREMENT", "children": [{"name":"id INT PRIMARY KEY AUTO_INCREMENT"}, {"name":"-- Generates a unique number automatically for new rows"}]},
-                    {"name": "Foreign key cascading options", "children": [
-                        {"name": "ON DELETE CASCADE | SET NULL | RESTRICT | NO ACTION", "children": [{"name":"ON DELETE CASCADE /* Deletes child rows */"}, {"name":"ON DELETE SET NULL /* Sets foreign key in child to NULL */"}]}
-                    ]}
-                ]
-            }, {
-                 "name": "Views and Stored Routines",
-                 "children": [{ "name": "Views", "children": [
-                    {"name": "CREATE VIEW viewname AS SELECT ...;", "children": [{"name":"CREATE VIEW active_users AS SELECT id, name FROM users WHERE status = 'active';"}, {"name":"-- A stored query that can be used like a table"}]},
-                    {"name": "CREATE OR REPLACE VIEW ...", "children": [{"name":"CREATE OR REPLACE VIEW user_summary AS SELECT ...;"}, {"name":"-- Updates a view if it already exists"}]},
-                    {"name": "WITH CHECK OPTION", "children": [{"name":"-- Prevents inserts/updates through the view that don't match its WHERE clause"}, {"name":"CREATE VIEW ca_customers AS ... WHERE state = 'CA' WITH CHECK OPTION;"}]},
-                    {"name": "DROP VIEW viewname;", "children": [{"name":"DROP VIEW active_users;"}, {"name":"DROP VIEW IF EXISTS user_summary;"}]}
-                ] },
-                 { "name": "Stored Procedures", "children": [
-                    {"name": "CREATE PROCEDURE (IN, OUT, INOUT params)", "children": [{"name":"CREATE PROCEDURE GetUser(IN user_id INT) BEGIN ... END;"}, {"name":"CREATE PROCEDURE UpdateStats(OUT total INT) BEGIN ... END;"}]},
-                    {"name": "CALL procname(...);", "children": [{"name":"CALL GetUser(123);"}, {"name":"CALL CalculateDailySales();"}]},
-                    {"name": "SHOW CREATE PROCEDURE procname;", "children": [{"name":"SHOW CREATE PROCEDURE GetUser;"}, {"name":"-- Shows the SQL needed to recreate the procedure"}]},
-                    {"name": "DROP PROCEDURE procname;", "children": [{"name":"DROP PROCEDURE GetUser;"}, {"name":"DROP PROCEDURE IF EXISTS CalculateDailySales;"}]}
-                ] },
-                 { "name": "Stored Functions", "children": [
-                    {"name": "CREATE FUNCTION ... RETURNS ...", "children": [{"name":"CREATE FUNCTION GetUserLevel(xp INT) RETURNS VARCHAR(20) ...;"}, {"name":"-- Can be used in SQL queries like built-in functions"}]},
-                    {"name": "SELECT funcname(col) FROM t;", "children": [{"name":"SELECT name, GetUserLevel(experience_points) FROM users;"}, {"name":"SELECT price, CalculateTax(price) FROM products;"}]},
-                    {"name": "SHOW CREATE FUNCTION funcname;", "children": [{"name":"SHOW CREATE FUNCTION GetUserLevel;"}, {"name":"-- Shows the function's definition"}]},
-                    {"name": "DROP FUNCTION funcname;", "children": [{"name":"DROP FUNCTION GetUserLevel;"}, {"name":"DROP FUNCTION IF EXISTS CalculateTax;"}]}
-                ] },
-                 { "name": "Variables & Cursors", "children": [
-                    {"name": "DECLARE variable;", "children": [{"name":"DECLARE user_count INT DEFAULT 0;"}, {"name":"DECLARE customer_name VARCHAR(100);"}]},
-                    {"name": "SET @uservar = val;", "children": [{"name":"SET @last_user_id = 50;"}, {"name":"SELECT @last_user_id;"}]},
-                    {"name": "DECLARE cursor FOR SELECT ...", "children": [{"name":"DECLARE user_cursor CURSOR FOR SELECT id, email FROM users;"}, {"name":"-- Used to iterate through a result set row by row"}]},
-                    {"name": "OPEN / FETCH / CLOSE cursor", "children": [{"name":"OPEN user_cursor; FETCH user_cursor INTO @id, @email; CLOSE user_cursor;"}, {"name":"-- Standard cursor operations inside a procedure"}]},
-                    {"name": "Error Handling (DECLARE HANDLER)", "children": [{"name":"DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;"}, {"name":"DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; END;"}]}
-                ] },
-                 { "name": "Flow control in routines", "children": [
-                    {"name": "IF ... THEN ... ELSEIF ... END IF;", "children": [{"name":"IF user_score > 100 THEN SET user_level = 'expert'; END IF;"}, {"name":"-- Conditional logic inside procedures/functions"}]},
-                    {"name": "CASE ...", "children": [{"name":"CASE status WHEN 'a' THEN SET result = 'Active'; ELSE SET result = 'Inactive'; END CASE;"}, {"name":"-- Multi-branch conditional logic"}]},
-                    {"name": "LOOP / WHILE / REPEAT", "children": [{"name":"WHILE i < 10 DO ... SET i = i + 1; END WHILE;"}, {"name":"-- Different ways to loop inside routines"}]},
-                    {"name": "LEAVE / ITERATE", "children": [{"name":"LEAVE my_loop; /* Exits the loop */"}, {"name":"ITERATE my_loop; /* Skips to the next iteration */"}]}
-                ] }]
-            }, {
-                "name": "Transaction Management", "children": [
-                    {"name": "Basic transaction commands", "children": [
-                        {"name": "START TRANSACTION;", "children": [{"name":"START TRANSACTION; UPDATE accounts SET balance=balance-100 WHERE id=1;"}, {"name":"-- Begins a block of work"}]},
-                        {"name": "COMMIT;", "children": [{"name":"COMMIT;"}, {"name":"-- Saves all changes made during the transaction"}]},
-                        {"name": "ROLLBACK;", "children": [{"name":"ROLLBACK;"}, {"name":"-- Discards all changes made during the transaction"}]}
-                    ]},
-                    {"name": "Savepoints", "children": [
-                        {"name": "SAVEPOINT sp1;", "children": [{"name":"SAVEPOINT before_delete;"}, {"name":"-- Creates a point within a transaction to roll back to"}]},
-                        {"name": "ROLLBACK TO SAVEPOINT sp1;", "children": [{"name":"ROLLBACK TO SAVEPOINT before_delete;"}, {"name":"-- Reverts changes made after the savepoint"}]}
-                    ]},
-                    {"name": "ACID properties (Atomicity, Consistency, Isolation, Durability)", "children": [
-                        {"name":"Atomicity: All operations in a transaction succeed or none do."}, 
-                        {"name":"Consistency: The DB is in a valid state before and after the transaction."},
-                        {"name":"Isolation: Concurrent transactions do not affect each other's execution."},
-                        {"name":"Durability: Once a transaction is committed, its changes are permanent."}
-                    ]},
-                    {"name": "Autocommit Setting", "children": [
-                        {"name": "SET autocommit = 0; (off)", "children": [{"name":"-- Every statement will not be committed automatically"}, {"name":"-- Requires explicit COMMIT or ROLLBACK"}]},
-                        {"name": "SET autocommit = 1; (on)", "children": [{"name":"-- Default mode, every statement is its own transaction"}, {"name":"SET autocommit = 1;"}]}
-                    ]},
-                    {"name": "Isolation levels", "children": [
-                        {"name": "READ UNCOMMITTED", "children": [{"name":"SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;"}, {"name":"-- Allows dirty reads, rarely used"}]},
-                        {"name": "READ COMMITTED", "children": [{"name":"SET TRANSACTION ISOLATION LEVEL READ COMMITTED;"}, {"name":"-- Prevents dirty reads"}]},
-                        {"name": "REPEATABLE READ (Default)", "children": [{"name":"SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;"}, {"name":"-- Prevents non-repeatable reads and dirty reads"}]},
-                        {"name": "SERIALIZABLE", "children": [{"name":"SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;"}, {"name":"-- Highest isolation, prevents phantom reads"}]}
-                    ]},
-                    {"name": "Locking", "children": [
-                        {"name": "SELECT ... FOR UPDATE;", "children": [{"name":"SELECT * FROM products WHERE id = 1 FOR UPDATE;"}, {"name":"-- Acquires an exclusive lock on the selected rows"}]},
-                        {"name": "SELECT ... LOCK IN SHARE MODE;", "children": [{"name":"SELECT * FROM products WHERE id = 1 LOCK IN SHARE MODE;"}, {"name":"-- Acquires a shared lock, allows others to read but not write"}]},
-                        {"name": "LOCK TABLES t WRITE;", "children": [{"name":"LOCK TABLES products WRITE, categories READ;"}, {"name":"UNLOCK TABLES;"}]}
-                    ]}
-                ]
-            }, {
-                "name": "Triggers and Events", "children": [
-                    {"name": "Triggers", "children": [
-                        {"name": "CREATE TRIGGER ... BEFORE/AFTER INSERT/UPDATE/DELETE", "children": [{"name":"CREATE TRIGGER before_user_update BEFORE UPDATE ON users FOR EACH ROW ...;"}, {"name":"-- Automatically execute code in response to DML events"}]},
-                        {"name": "Accessing data with OLD.col and NEW.col", "children": [{"name":"SET NEW.updated_at = NOW();"}, {"name":"INSERT INTO audit_log (old_value, new_value) VALUES (OLD.email, NEW.email);"}]},
-                        {"name": "DROP TRIGGER trg_name;", "children": [{"name":"DROP TRIGGER before_user_update;"}, {"name":"DROP TRIGGER IF EXISTS after_order_insert;"}]}
-                    ]},
-                    {"name": "Scheduled Events", "children": [
-                        {"name": "CREATE EVENT ... ON SCHEDULE ...", "children": [{"name":"CREATE EVENT archive_logs ON SCHEDULE EVERY 1 DAY DO ...;"}, {"name":"-- A task that runs on a schedule"}]},
-                        {"name": "SHOW EVENTS;", "children": [{"name":"SHOW EVENTS;"}, {"name":"SHOW EVENTS FROM sales_db;"}]},
-                        {"name": "DROP EVENT event_name;", "children": [{"name":"DROP EVENT archive_logs;"}, {"name":"DROP EVENT IF EXISTS monthly_report;"}]},
-                        {"name": "SET GLOBAL event_scheduler = ON;", "children": [{"name":"-- Must be enabled for events to run"}, {"name":"SET GLOBAL event_scheduler = OFF;"}]}
-                    ]}
-                ]
-            }, {
-                "name": "Advanced SQL Functions and Operators",
-                "children": [
-                { "name": "String functions", "children": [
-                    {"name": "CONCAT()", "children": [{"name":"SELECT CONCAT(first_name, ' ', last_name) FROM users;"}, {"name":"SELECT CONCAT('Order ID: ', id) FROM orders;"}]},
-                    {"name": "CONCAT_WS()", "children": [{"name":"SELECT CONCAT_WS(', ', city, state, country) FROM addresses;"}, {"name":"SELECT CONCAT_WS('-', year, month, day) FROM dates;"}]},
-                    {"name": "SUBSTRING()", "children": [{"name":"SELECT SUBSTRING(description, 1, 50) FROM articles;"}, {"name":"SELECT SUBSTRING(phone, -4) FROM contacts; /* Last 4 digits */"}]},
-                    {"name": "CHAR_LENGTH()", "children": [{"name":"SELECT name FROM users WHERE CHAR_LENGTH(name) > 50;"}, {"name":"-- Counts characters, safe for multi-byte strings"}]},
-                    {"name": "LENGTH()", "children": [{"name":"SELECT LENGTH('€'); /* Returns 3 on UTF8 */"}, {"name":"-- Counts bytes, can be misleading for Unicode"}]},
-                    {"name": "REPLACE()", "children": [{"name":"SELECT REPLACE('abcde', 'cd', 'xy'); /* returns 'abxye' */"}, {"name":"UPDATE products SET sku = REPLACE(sku, 'OLD-', 'NEW-');"}]},
-                    {"name": "TRIM()", "children": [{"name":"SELECT TRIM('  hello  '); /* returns 'hello' */"}, {"name":"SELECT TRIM(BOTH '-' FROM '--test--'); /* returns 'test' */"}]},
-                    {"name": "LPAD()", "children": [{"name":"SELECT LPAD('hi', 5, '?'); /* returns '???hi' */"}, {"name":"SELECT LPAD(id, 8, '0') FROM orders;"}]},
-                    {"name": "RPAD()", "children": [{"name":"SELECT RPAD('hi', 5, '?'); /* returns 'hi???' */"}, {"name":"SELECT RPAD(name, 20, '.') FROM users;"}]},
-                    {"name": "LOWER()", "children": [{"name":"SELECT * FROM users WHERE LOWER(email) = 'test@example.com';"}, {"name":"SELECT LOWER('Hello World');"}]},
-                    {"name": "UPPER()", "children": [{"name":"SELECT UPPER(country_code) FROM countries;"}, {"name":"SELECT UPPER('Hello World');"}]},
-                    {"name": "INSTR()", "children": [{"name":"SELECT name FROM users WHERE INSTR(name, ' ') > 0; /* Has a space */"}, {"name":"SELECT INSTR('foobar', 'bar'); /* Returns 4 */"}]},
-                    {"name": "LOCATE()", "children": [{"name":"SELECT LOCATE('@', email) FROM users;"}, {"name":"SELECT LOCATE('a', 'banana', 3); /* Starts search from pos 3, returns 4 */"}]},
-                    {"name": "SOUNDEX()", "children": [{"name":"SELECT * FROM users WHERE SOUNDEX(last_name) = SOUNDEX('Smith');"}, {"name":"-- Finds records that sound similar"}]}
-                ]},
-                { "name": "Numeric functions", "children": [
-                    {"name": "ROUND()", "children": [{"name":"SELECT ROUND(price, 2) FROM products;"}, {"name":"SELECT ROUND(123.456, 1); /* Returns 123.5 */"}]},
-                    {"name": "TRUNCATE()", "children": [{"name":"SELECT TRUNCATE(123.4567, 2); /* Returns 123.45 */"}, {"name":"SELECT TRUNCATE(123, -1); /* Returns 120 */"}]},
-                    {"name": "CEIL()", "children": [{"name":"SELECT CEIL(AVG(quantity)) FROM order_items;"}, {"name":"SELECT CEIL(9.1); /* Returns 10 */"}]},
-                    {"name": "FLOOR()", "children": [{"name":"SELECT FLOOR(price) FROM products;"}, {"name":"SELECT FLOOR(9.9); /* Returns 9 */"}]},
-                    {"name": "ABS()", "children": [{"name":"SELECT ABS(balance) FROM accounts;"}, {"name":"SELECT ABS(-25); /* Returns 25 */"}]},
-                    {"name": "SIGN()", "children": [{"name":"SELECT SIGN(change) FROM stock_prices;"}, {"name":"SELECT SIGN(-50); /* Returns -1 */"}]},
-                    {"name": "MOD()", "children": [{"name":"SELECT * FROM users WHERE MOD(id, 2) = 0; /* Even IDs */"}, {"name":"SELECT 10 MOD 3; /* Returns 1 */"}]},
-                    {"name": "RAND()", "children": [{"name":"SELECT * FROM products ORDER BY RAND() LIMIT 1;"}, {"name":"SELECT FLOOR(RAND() * 100) + 1; /* Random number 1-100 */"}]}
-                ]},
-                { "name": "Date & time functions", "children": [
-                    {"name": "NOW()", "children": [{"name":"INSERT INTO logs (message, ts) VALUES ('User logged in', NOW());"}, {"name":"SELECT NOW(); /* YYYY-MM-DD HH:MM:SS */"}]},
-                    {"name": "CURDATE()", "children": [{"name":"SELECT * FROM events WHERE event_date = CURDATE();"}, {"name":"SELECT CURDATE(); /* YYYY-MM-DD */"}]},
-                    {"name": "CURTIME()", "children": [{"name":"SELECT * FROM shifts WHERE start_time > CURTIME();"}, {"name":"SELECT CURTIME(); /* HH:MM:SS */"}]},
-                    {"name": "DATE_ADD()", "children": [{"name":"SELECT DATE_ADD(NOW(), INTERVAL 30 DAY);"}, {"name":"SELECT DATE_ADD('2024-01-01', INTERVAL 2 MONTH);"}]},
-                    {"name": "DATE_SUB()", "children": [{"name":"SELECT DATE_SUB(order_date, INTERVAL 1 YEAR) FROM orders;"}, {"name":"SELECT DATE_SUB('2024-01-01', INTERVAL 15 MINUTE);"}]},
-                    {"name": "DATEDIFF()", "children": [{"name":"SELECT DATEDIFF('2025-12-31', CURDATE());"}, {"name":"SELECT DATEDIFF(shipped_date, order_date) FROM orders;"}]},
-                    {"name": "TIMEDIFF()", "children": [{"name":"SELECT TIMEDIFF(end_time, start_time) FROM events;"}, {"name":"SELECT TIMEDIFF('14:30:00', '09:00:00');"}]},
-                    {"name": "DATE_FORMAT()", "children": [{"name":"SELECT DATE_FORMAT(created_at, '%M %d, %Y') FROM posts;"}, {"name":"SELECT DATE_FORMAT(NOW(), '%W, %b %e, %Y');"}]},
-                    {"name": "STR_TO_DATE()", "children": [{"name":"SELECT STR_TO_DATE('01,5,2025', '%d,%m,%Y');"}, {"name":"UPDATE events SET event_date = STR_TO_DATE('Aug 1, 2025', '%b %e, %Y');"}]},
-                    {"name": "EXTRACT(unit FROM date)", "children": [{"name":"SELECT EXTRACT(YEAR FROM birth_date) FROM users;"}, {"name":"SELECT * FROM orders WHERE EXTRACT(MONTH FROM order_date) = 12;"}]},
-                    {"name": "UNIX_TIMESTAMP()", "children": [{"name":"SELECT UNIX_TIMESTAMP(NOW());"}, {"name":"SELECT UNIX_TIMESTAMP('2024-01-01 00:00:00');"}]},
-                    {"name": "FROM_UNIXTIME()", "children": [{"name":"SELECT FROM_UNIXTIME(1672531199);"}, {"name":"SELECT FROM_UNIXTIME(ts_col) FROM logs;"}]}
-                ]},
-                { "name": "Control flow functions", "children": [
-                    {"name": "IF(expr, true, false)", "children": [{"name":"SELECT IF(is_active, 'Active', 'Inactive') FROM users;"}, {"name":"SELECT SUM(IF(amount > 0, amount, 0)) FROM transactions;"}]},
-                    {"name": "IFNULL(a, b)", "children": [{"name":"SELECT IFNULL(nickname, first_name) FROM users;"}, {"name":"SELECT IFNULL(shipped_date, 'Not Shipped') FROM orders;"}]},
-                    {"name": "CASE WHEN ... THEN ... END", "children": [{"name":"SELECT CASE status WHEN 1 THEN 'Active' WHEN 0 THEN 'Banned' ELSE 'Pending' END FROM users;"}, {"name":"-- Multi-condition logic within a query"}]},
-                    {"name": "COALESCE(v1, v2, ...)", "children": [{"name":"SELECT COALESCE(phone_mobile, phone_work, phone_home) FROM contacts;"}, {"name":"-- Returns the first non-NULL value in a list"}]},
-                    {"name": "NULLIF(a, b)", "children": [{"name":"SELECT NULLIF(status, 'pending') FROM tasks;"}, {"name":"-- Returns NULL if the two expressions are equal, otherwise returns the first"}]}
-                ]},
-                { "name": "Window Ranking Functions", "children": [
-                    {"name": "ROW_NUMBER()", "children": [{"name":"ROW_NUMBER() OVER (ORDER BY salary DESC) as rank_num"}, {"name":"-- Assigns a unique, sequential integer to each row"}]},
-                    {"name": "RANK()", "children": [{"name":"RANK() OVER (PARTITION BY department ORDER BY salary DESC)"}, {"name":"-- Assigns rank; leaves gaps for ties (1, 2, 2, 4)"}]},
-                    {"name": "DENSE_RANK()", "children": [{"name":"DENSE_RANK() OVER (ORDER BY score DESC)"}, {"name":"-- Assigns rank; does not leave gaps for ties (1, 2, 2, 3)"}]}
-                ]},
-                { "name": "Window Value Functions", "children": [
-                    {"name": "LAG()", "children": [{"name":"LAG(sale_amount, 1, 0) OVER (ORDER BY sale_date)"}, {"name":"-- Access data from a previous row"}]},
-                    {"name": "LEAD()", "children": [{"name":"LEAD(sale_date, 1) OVER (PARTITION BY user_id ORDER BY sale_date)"}, {"name":"-- Access data from a following row"}]}
-                ]},
-                { "name": "Window Aggregate Functions", "children": [
-                    {"name": "SUM() OVER (...)", "children": [{"name":"SUM(amount) OVER (PARTITION BY user_id)"}, {"name":"SUM(amount) OVER (ORDER BY date) as running_total"}]},
-                    {"name": "COUNT() OVER (...)", "children": [{"name":"COUNT(*) OVER (PARTITION BY country)"}, {"name":"-- Count rows within the window frame"}]},
-                    {"name": "AVG() OVER (...)", "children": [{"name":"AVG(salary) OVER (PARTITION BY department)"}, {"name":"-- Calculate average over the window frame"}]}
-                ]},
-                { "name": "Advanced window functions", "children": [
-                    {"name": "FIRST_VALUE()", "children": [{"name":"FIRST_VALUE(product_name) OVER (PARTITION BY category ORDER BY price ASC)"}, {"name":"-- Get the first value in an ordered window"}]},
-                    {"name": "LAST_VALUE()", "children": [{"name":"LAST_VALUE(product_name) OVER (PARTITION BY category ORDER BY price ASC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)"}, {"name":"-- Get the last value in an ordered window"}]},
-                    {"name": "NTH_VALUE()", "children": [{"name":"NTH_VALUE(product_name, 2) OVER (...)"}, {"name":"-- Get the value from the Nth row in a window"}]},
-                    {"name": "NTILE(n)", "children": [{"name":"NTILE(4) OVER (ORDER BY sales DESC) as sales_quartile"}, {"name":"-- Divides rows into a specified number of ranked groups"}]}
-                ]},
-                { "name": "Enhanced JSON support", "children": [
-                    {"name": "JSON Creation", "children": [
-                         {"name": "JSON_OBJECT()", "children": [{"name":"SELECT JSON_OBJECT('id', 1, 'name', 'John');"}, {"name":"INSERT INTO logs (data) VALUES (JSON_OBJECT('level', 'error'));"}]},
-                         {"name": "JSON_ARRAY()", "children": [{"name":"SELECT JSON_ARRAY(1, 'apple', true);"}, {"name":"UPDATE products SET tags = JSON_ARRAY('electronics', 'new');"}]}
-                    ]},
-                    {"name": "JSON Extraction", "children": [
-                        {"name": "JSON_EXTRACT()", "children": [{"name":"SELECT JSON_EXTRACT(data, '$.name') FROM users;"}, {"name":"SELECT JSON_EXTRACT(data, '$.items[0]') FROM orders;"}]},
-                        {"name": "-> (path operator)", "children": [{"name":"SELECT data->'$.name' FROM users;"}, {"name":"-- shorthand for JSON_EXTRACT, returns JSON"}]},
-                        {"name": "->> (unquoting path operator)", "children": [{"name":"SELECT data->>'$.name' FROM users;"}, {"name":"-- extracts and unquotes the string value"}]}
-                    ]},
-                    {"name": "JSON Modification", "children": [
-                        {"name": "JSON_SET()", "children": [{"name":"UPDATE users SET data = JSON_SET(data, '$.age', 30);"}, {"name":"-- Replaces existing values, adds non-existing ones"}]},
-                        {"name": "JSON_INSERT()", "children": [{"name":"UPDATE users SET data = JSON_INSERT(data, '$.active', true);"}, {"name":"-- Only inserts if value does not exist"}]},
-                        {"name": "JSON_REPLACE()", "children": [{"name":"UPDATE users SET data = JSON_REPLACE(data, '$.name', 'Jane');"}, {"name":"-- Only replaces if value already exists"}]},
-                        {"name": "JSON_REMOVE()", "children": [{"name":"UPDATE users SET data = JSON_REMOVE(data, '$.temp_key');"}, {"name":"-- Removes a key-value pair from a JSON object"}]}
-                    ]},
-                     {"name": "JSON Querying & Info", "children": [
-                        {"name": "JSON_CONTAINS()", "children": [{"name":"SELECT * FROM products WHERE JSON_CONTAINS(tags, '\"electronics\"');"}, {"name":"-- Check if a value exists within a JSON document"}]},
-                        {"name": "JSON_KEYS()", "children": [{"name":"SELECT JSON_KEYS(user_settings) FROM users;"}, {"name":"-- Returns the top-level keys from a JSON object"}]},
-                        {"name": "JSON_DEPTH()", "children": [{"name":"SELECT JSON_DEPTH('{\"a\": {\"b\": 1}}'); /* Returns 3 */"}, {"name":"-- Returns the maximum depth of a JSON document"}]}
-                    ]},
-                    {"name": "JSON_MERGE_PATCH()", "children": [{"name":"JSON_MERGE_PATCH('{\"a\":1}', '{\"b\":2}');"}, {"name":"-- Merges two JSON objects"}]},
-                    {"name": "JSON_TABLE()", "children": [{"name":"-- Turns JSON data into a relational table on the fly"}, {"name":"SELECT * FROM JSON_TABLE(json_doc, '$.items[*]' COLUMNS(...)) AS jt;"}]}
-                ]},
-                { "name": "Spatial Functions", "children": [
-                    {"name": "ST_Distance()", "children": [{"name":"SELECT ST_Distance(point1, point2) FROM locations;"}, {"name":"-- Calculates the distance between two geometries"}]},
-                    {"name": "ST_Contains()", "children": [{"name":"SELECT * FROM stores WHERE ST_Contains(delivery_zone, @customer_location);"}, {"name":"-- Checks if one geometry contains another"}]},
-                    {"name": "ST_AsText()", "children": [{"name":"SELECT ST_AsText(location) FROM stores;"}, {"name":"-- Converts geometry data to its Well-Known Text (WKT) representation"}]}
-                ]}
-                ]
-            }, {
-                "name": "Modern MySQL Features (8.0+)", "children": [
-                    {"name": "Invisible Columns", "children": [{"name":"ALTER TABLE users ADD COLUMN internal_notes TEXT INVISIBLE;"}, {"name":"-- Column doesn't show in `SELECT *`, must be selected explicitly"}]},
-                    {"name": "Descending Indexes", "children": [{"name":"CREATE INDEX idx_date_desc ON events(event_date DESC);"}, {"name":"-- Improves performance for queries with `ORDER BY ... DESC`"}]},
-                    {"name": "Histograms for Optimizer", "children": [{"name":"ANALYZE TABLE t UPDATE HISTOGRAM ON col;"}, {"name":"-- Provides the query optimizer with better data distribution stats"}]},
-                    {"name": "Enhanced Authentication (caching_sha2_password)", "children": [{"name":"-- Default authentication plugin, more secure than the old one"}, {"name":"-- Can require configuration in older clients"}]},
-                    {"name": "Role-based access control", "children": [{"name":"CREATE ROLE 'app_read', 'app_write';"}, {"name":"GRANT 'app_read' TO 'user1'@'localhost';"}]},
-                    {"name": "RESTART command", "children": [{"name":"RESTART;"}, {"name":"-- A new, cleaner way to restart the MySQL server instance"}]},
-                    {"name": "Security auditing", "children": [{"name":"-- MySQL Enterprise Audit provides robust logging of server activity"}, {"name":"-- Can also use open-source alternatives like the Percona Audit Log Plugin"}]},
-                    {"name": "Clone Plugin", "children": [{"name":"CLONE INSTANCE FROM 'user'@'host':port;"}, {"name":"-- A fast way to provision replicas by physically copying data"}]},
-                    {"name": "TABLE Statement", "children": [{"name":"TABLE my_table ORDER BY col LIMIT 10;"}, {"name":"-- A shorthand for `SELECT * FROM my_table ...`"}]},
-                    {"name": "VALUES Statement", "children": [{"name":"VALUES ROW(1, 'a'), ROW(2, 'b');"}, {"name":"-- Generates a table from literal values, useful in CTEs"}]}
-                ]
-            }, {
-                "name": "Order of Execution of SQL Query",
-                "children": [
-                    { "name": "1. FROM / JOINs", "children": [{"name": "All tables and joins are processed first to create the working dataset."}] },
-                    { "name": "2. WHERE", "children": [{"name": "Rows that do not match the WHERE condition are filtered out."}] },
-                    { "name": "3. GROUP BY", "children": [{"name": "The remaining rows are grouped based on common values in a column."}] },
-                    { "name": "4. HAVING", "children": [{"name": "Groups that do not match the HAVING condition are filtered out."}] },
-                    { "name": "5. SELECT", "children": [{"name": "The requested expressions/columns in the SELECT list are processed."}] },
-                    { "name": "6. DISTINCT", "children": [{"name": "Duplicate rows are removed from the result set."}] },
-                    { "name": "7. ORDER BY", "children": [{"name": "The result set is sorted according to the specified columns."}] },
-                    { "name": "8. LIMIT / OFFSET", "children": [{"name": "Finally, only the specified subset of rows is returned."}] }
-                ]
-            }, {
-                "name": "Backup and Restore", "children": [
-                    {"name": "mysqldump utility", "children": [
-                        {"name": "mysqldump > dump.sql", "children": [{"name":"mysqldump -u root -p sales_db > sales_db_backup.sql;"}, {"name":"-- Creates a logical backup (SQL statements)"}]},
-                        {"name": "--single-transaction", "children": [{"name":"-- For InnoDB, creates a consistent snapshot without locking tables"}, {"name":"mysqldump --single-transaction dbname > backup.sql;"}]},
-                        { "name": "Include Stored Routines/Events", "children": [
-                            {"name": "--routines", "children": [{"name":"mysqldump --routines dbname > backup.sql;"}, {"name":"-- Includes stored procedures and functions"}]},
-                            {"name": "--triggers", "children": [{"name":"mysqldump --triggers dbname > backup.sql;"}, {"name":"-- Includes triggers on tables"}]},
-                            {"name": "--events", "children": [{"name":"mysqldump --events dbname > backup.sql;"}, {"name":"-- Includes scheduled events"}]}
-                        ]},
-                        { "name": "Data/Schema Control", "children": [
-                            {"name": "--no-data", "children": [{"name":"mysqldump --no-data dbname > schema.sql;"}, {"name":"-- Dumps only the schema (CREATE TABLE statements)"}]},
-                            {"name": "--no-create-info", "children": [{"name":"mysqldump --no-create-info dbname > data.sql;"}, {"name":"-- Dumps only the data (INSERT statements)"}]}
-                        ]}
-                    ]},
-                    {"name": "mysqlpump (parallel backups)", "children": [{"name":"mysqlpump -u root -p --parallel-schemas=4:sales,users > backup.sql;"}, {"name":"-- A more modern, parallel version of mysqldump"}]},
-                    {"name": "Physical Backups (Percona XtraBackup)", "children": [{"name":"-- A very fast, non-blocking method for creating physical backups"}, {"name":"xtrabackup --backup --target-dir=/backups/"}]},
-                    {"name": "Import data", "children": [
-                        {"name": "mysql < dump.sql", "children": [{"name":"mysql -u root -p sales_db < sales_db_backup.sql;"}, {"name":"-- Restores a backup from a mysqldump file"}]},
-                        {"name": "SOURCE /path/to/dump.sql;", "children": [{"name":"-- Can be run from within the MySQL client"}, {"name":"SOURCE /backups/schema.sql;"}]}
-                    ]},
-                    {"name": "Binary Logs (Point-in-Time Recovery)", "children": [
-                        {"name": "mysqlbinlog utility", "children": [{"name":"mysqlbinlog binlog.000001 > recovery.sql;"}, {"name":"-- Used to inspect and apply binary log events for recovery"}]},
-                        {"name": "SHOW BINARY LOGS;", "children": [{"name":"SHOW BINARY LOGS;"}, {"name":"SHOW MASTER STATUS;"}]}
-                    ]},
-                    {"name": "CSV / Delimited data imports", "children": [
-                        {"name": "LOAD DATA INFILE ...", "children": [{"name":"LOAD DATA INFILE '/tmp/data.csv' INTO TABLE my_table FIELDS TERMINATED BY ',';"}, {"name":"-- A very fast way to bulk-load data"}]},
-                        {"name": "LOAD XML INFILE ...", "children": [{"name":"LOAD XML LOCAL INFILE '/tmp/data.xml' INTO TABLE my_table;"}, {"name":"-- Bulk load from an XML file"}]},
-                        {"name": "SELECT ... INTO OUTFILE ...", "children": [{"name":"SELECT * FROM users INTO OUTFILE '/tmp/users.csv' FIELDS TERMINATED BY ',';"}, {"name":"-- Exports query results to a file on the server"}]}
-                    ]}
-                ]
-            }, {
-                "name": "Security and User Management", "children": [
-                    {"name": "Create users", "children": [
-                        {"name": "CREATE USER 'u'@'h' IDENTIFIED BY 'p';", "children": [{"name":"CREATE USER 'webapp'@'localhost' IDENTIFIED BY 'secure_password';"}, {"name":"CREATE USER 'reporter'@'%' IDENTIFIED BY 'another_password';"}]}
-                    ]},
-                    {"name": "Manage users", "children": [
-                        {"name": "DROP USER 'u'@'h'", "children": [{"name":"DROP USER 'olduser'@'localhost';"}, {"name":"DROP USER IF EXISTS 'temp_user'@'%';"}]},
-                        {"name": "RENAME USER 'u'@'h' TO 'nu'@'h';", "children": [{"name":"RENAME USER 'webapp'@'localhost' TO 'app_user'@'localhost';"}, {"name":"RENAME USER 'reporter'@'%' TO 'analyst'@'%';"}]}
-                    ]},
-                    {"name": "Grant privileges", "children": [
-                        {"name": "GRANT SELECT, INSERT ON db.* TO 'u'@'h';", "children": [{"name":"GRANT SELECT, INSERT, UPDATE ON sales_db.* TO 'webapp'@'localhost';"}, {"name":"GRANT SELECT ON reports_db.sales_summary TO 'reporter'@'%';"}]},
-                        {"name": "GRANT ALL PRIVILEGES ...", "children": [{"name":"GRANT ALL PRIVILEGES ON *.* TO 'admin'@'localhost' WITH GRANT OPTION;"}, {"name":"-- Use with extreme caution"}]},
-                        {"name": "WITH GRANT OPTION", "children": [{"name":"-- Allows the user to grant their own privileges to other users"}, {"name":"GRANT SELECT ON db.* TO 'team_lead'@'%' WITH GRANT OPTION;"}]}
-                    ]},
-                    {"name": "Revoke privileges", "children": [
-                        {"name": "REVOKE SELECT ON db.* FROM 'u'@'h';", "children": [{"name":"REVOKE UPDATE, DELETE ON sales_db.* FROM 'webapp'@'localhost';"}, {"name":"REVOKE ALL PRIVILEGES, GRANT OPTION FROM 'admin'@'localhost';"}]}
-                    ]},
-                    {"name": "Password management", "children": [
-                        {"name": "ALTER USER ... IDENTIFIED BY ...", "children": [{"name":"ALTER USER 'webapp'@'localhost' IDENTIFIED BY 'new_strong_password';"}, {"name":"ALTER USER 'root'@'localhost' IDENTIFIED WITH caching_sha2_password BY '...';"}]},
-                        {"name": "Password Validation Plugin", "children": [{"name":"-- Can be configured to enforce password policies (length, complexity)"}, {"name":"INSTALL PLUGIN validate_password SONAME 'validate_password.so';"}]},
-                        {"name": "SHOW GRANTS FOR 'u'@'h';", "children": [{"name":"SHOW GRANTS FOR 'webapp'@'localhost';"}, {"name":"SHOW GRANTS FOR CURRENT_USER();"}]}
-                    ]},
-                    {"name": "Secure Connections (SSL/TLS)", "children": [{"name":"-- Configure MySQL server with SSL certificates"}, {"name":"GRANT USAGE ON *.* TO 'user'@'%' REQUIRE SSL;"}]},
-                    {"name": "Proxy Users", "children": [{"name":"-- Allows one user to impersonate another"}, {"name":"GRANT PROXY ON 'real_user' TO 'proxy_user';"}]}
-                ]
-            }, {
-                "name": "Advanced Database Architecture",
-                "children": [{ "name": "Table Partitioning", "children": [
-                    {"name": "RANGE, HASH, LIST, KEY partitioning", "children": [{"name":"PARTITION BY RANGE (YEAR(order_date)) (...);"}, {"name":"-- Breaks a large table into smaller, more manageable pieces"}]}
-                ]},
-                { "name": "Replication", "children": [
-                    {"name": "Source-Replica (Master-Slave)", "children": [{"name":"-- For scaling reads and providing high availability"}, {"name":"-- A replica server follows the changes from a source server"}]},
-                    {"name": "Row-based vs Statement-based", "children": [{"name":"-- Row-based (default) is safer, logs the changed rows"}, {"name":"-- Statement-based logs the SQL statements, can be non-deterministic"}]},
-                    {"name": "GTID-based replication", "children": [{"name":"-- Global Transaction Identifiers simplify failover"}, {"name":"-- The preferred method in modern MySQL"}]},
-                    {"name": "Group Replication", "children": [{"name":"-- Used for creating fault-tolerant clusters with multi-master updates"}, {"name":"-- Forms the basis of InnoDB Cluster"}]},
-                    {"name": "SHOW REPLICA STATUS;", "children": [{"name":"SHOW REPLICA STATUS\\G"}, {"name":"-- The most important command for monitoring replication health"}]}
-                ]},
-                { "name": "High Availability Concepts", "children": [
-                    {"name": "MySQL InnoDB Cluster", "children": [{"name":"-- A complete HA solution from Oracle using Group Replication"}, {"name":"-- Includes MySQL Router for automatic failover"}]},
-                    {"name": "Failover and DR", "children": [{"name":"-- Promoting a replica to be the new source after failure"}, {"name":"-- Disaster Recovery (DR) planning for data centers"}]},
-                    {"name": "Load balancing", "children": [{"name":"-- Distributing read queries among multiple replicas"}, {"name":"-- Tools like ProxySQL or MySQL Router can handle this"}]}
-                ]},
-                { "name": "Sharding (Conceptual)", "children": [
-                    {"name": "Application-level Sharding", "children": [{"name":"-- The application logic decides which database shard to connect to"}, {"name":"-- Provides maximum control but is complex to implement"}]},
-                    {"name": "Vitess / ProxySQL", "children": [{"name":"-- Middleware that sits between the app and MySQL to manage sharding"}, {"name":"-- Used to scale databases horizontally for write-heavy loads"}]}
-                ]},
-                { "name": "Storage engines", "children": [
-                    {"name": "SHOW ENGINES;", "children": [{"name":"SHOW ENGINES;"}, {"name":"-- Lists available storage engines and their status"}]},
-                    {"name": "InnoDB (Default, ACID)", "children": [{"name":"-- Supports transactions, row-level locking, and foreign keys"}, {"name":"-- The best choice for most applications"}]},
-                    {"name": "MyISAM (Legacy)", "children": [{"name":"-- No transaction support, uses table-level locking"}, {"name":"-- Generally only used for legacy systems"}]},
-                    {"name": "MEMORY (In-memory cache)", "children": [{"name":"-- All data is stored in RAM, very fast but not durable"}, {"name":"-- Good for temporary tables or caching"}]},
-                    {"name": "ARCHIVE (High compression)", "children": [{"name":"-- Stores data in a highly compressed format"}, {"name":"-- Used for archiving data, only allows inserts and selects"}]}
-                ]}
-                ]
-            }, {
-                "name": "Performance Tuning and Optimization", "children": [
-                    {"name": "Query profiling with EXPLAIN", "children": [
-                        {"name": "EXPLAIN SELECT ...;", "children": [{"name":"EXPLAIN SELECT * FROM users WHERE last_name = 'Smith';"}, {"name":"-- Shows the query execution plan"}]},
-                        {"name": "EXPLAIN FORMAT=JSON ...", "children": [{"name":"EXPLAIN FORMAT=JSON SELECT ...;"}, {"name":"-- Provides much more detail than the standard tabular output"}]},
-                        {"name": "Key Columns (type, key, rows, extra)", "children": [{"name":"-- `type`: Most important, want `ref` or `range`, avoid `ALL`"}, {"name":"-- `Extra`: Look for 'Using filesort' or 'Using temporary'"}]}
-                    ]},
-                    {"name": "Index Optimization", "children": [
-                        {"name": "Using appropriate indexes", "children": [{"name":"-- Add indexes for columns used in WHERE, JOIN, and ORDER BY clauses"}, {"name":"-- Don't over-index, as it slows down writes"}]},
-                        {"name": "Index hints (USE, FORCE, IGNORE)", "children": [{"name":"SELECT * FROM users USE INDEX (idx_lastname) ...;"}, {"name":"-- A way to guide the optimizer, use as a last resort"}]},
-                        {"name": "Avoid functions on indexed columns", "children": [{"name":"-- BAD: WHERE YEAR(order_date) = 2024"}, {"name":"-- GOOD: WHERE order_date >= '2024-01-01' AND order_date < '2025-01-01'"}]}
-                    ]},
-                    {"name": "Optimizer Hints (8.0+)", "children": [{"name":"SELECT /*+ MAX_EXECUTION_TIME(1000) */ ...;"}, {"name":"SELECT /*+ SET_VAR(sort_buffer_size=16M) */ ...;"}]},
-                    {"name": "Server Configuration (my.cnf)", "children": [
-                        {"name": "innodb_buffer_pool_size", "children": [{"name":"-- Most critical setting for InnoDB performance"}, {"name":"-- Typically set to 50-70% of available RAM"}]},
-                        {"name": "max_connections", "children": [{"name":"-- The maximum number of concurrent client connections"}, {"name":"-- Don't set too high, can exhaust memory"}]},
-                        {"name": "query_cache_size (deprecated)", "children": [{"name":"-- Query cache was removed in MySQL 8.0"}, {"name":"-- Was a major bottleneck"}]}
-                    ]},
-                    {"name": "Performance monitoring tools", "children": [
-                        {"name": "SHOW PROCESSLIST;", "children": [{"name":"SHOW FULL PROCESSLIST;"}, {"name":"-- Shows currently running queries and their state"}]},
-                        {"name": "SHOW GLOBAL STATUS;", "children": [{"name":"SHOW GLOBAL STATUS LIKE 'Innodb%';"}, {"name":"-- Provides hundreds of server metrics"}]},
-                        {"name": "Performance Schema & Sys Schema", "children": [{"name":"-- Powerful, low-level instrumentation framework"}, {"name":"-- Use `sys` schema for user-friendly, summarized views"}]},
-                        {"name": "pt-query-digest", "children": [{"name":"-- A command-line tool from Percona Toolkit for analyzing slow logs"}, {"name":"pt-query-digest /var/log/mysql/slow.log"}]}
-                    ]}
-                ]
-            }, {
-                "name": "Miscellaneous Useful Commands", "children": [
-                    {"name": "Process Management", "children": [
-                        {"name": "SHOW FULL PROCESSLIST;", "children": [{"name":"-- See all currently executing queries"}, {"name":"SHOW FULL PROCESSLIST;"}]},
-                        {"name": "KILL QUERY <id>;", "children": [{"name":"KILL QUERY 12345;"}, {"name":"-- Terminates a specific query without disconnecting the client"}]},
-                        {"name": "KILL CONNECTION <id>;", "children": [{"name":"KILL CONNECTION 12345;"}, {"name":"-- Kills the client's entire connection"}]}
-                    ]},
-                    {"name": "Server Status & Variables", "children": [
-                        {"name": "SHOW GLOBAL STATUS LIKE '...';", "children": [{"name":"SHOW GLOBAL STATUS LIKE 'Threads_connected';"}, {"name":"SHOW SESSION STATUS LIKE 'Uptime';"}]},
-                        {"name": "SHOW VARIABLES LIKE '...';", "children": [{"name":"SHOW VARIABLES LIKE 'innodb_buffer_pool_size';"}, {"name":"SHOW GLOBAL VARIABLES LIKE 'max_connections';"}]}
-                    ]},
-                    {"name": "INFORMATION_SCHEMA (Metadata)", "children": [
-                        {"name": "Querying Server Metadata", "children": [
-                            {"name": "TABLES", "children": [{"name":"SELECT table_name, engine FROM INFORMATION_SCHEMA.TABLES;"}, {"name":"-- Get info about tables in a database"}]},
-                            {"name": "COLUMNS", "children": [{"name":"SELECT column_name, data_type FROM INFORMATION_SCHEMA.COLUMNS;"}, {"name":"-- Get info about columns in a table"}]},
-                            {"name": "STATISTICS", "children": [{"name":"SELECT index_name, column_name FROM INFORMATION_SCHEMA.STATISTICS;"}, {"name":"-- Get info about indexes"}]},
-                            {"name": "PROCESSLIST", "children": [{"name":"SELECT * FROM INFORMATION_SCHEMA.PROCESSLIST;"}, {"name":"-- Alternative to SHOW PROCESSLIST"}]}
-                        ]}
-                    ]},
-                    {"name": "FLUSH commands", "children": [
-                        {"name": "FLUSH PRIVILEGES;", "children": [{"name":"-- Reloads the grant tables after manual edits (rarely needed)"}, {"name":"FLUSH PRIVILEGES;"}]},
-                        {"name": "FLUSH TABLES;", "children": [{"name":"-- Closes all open tables and forces tables to be reopened"}, {"name":"FLUSH TABLES WITH READ LOCK;"}]},
-                        {"name": "FLUSH LOGS;", "children": [{"name":"-- Closes and reopens log files (e.g., binary log, error log)"}, {"name":"FLUSH BINARY LOGS;"}]}
-                    ]},
-                    {"name": "Temporary tables", "children": [
-                        {"name": "CREATE TEMPORARY TABLE ...", "children": [{"name":"CREATE TEMPORARY TABLE temp_user_ids (id INT);"}, {"name":"-- A table that exists only for the current session"}]}
-                    ]},
-                    {"name": "Database maintenance", "children": [
-                        {"name": "REPAIR TABLE tablename;", "children": [{"name":"REPAIR TABLE my_isam_table;"}, {"name":"-- For MyISAM tables only"}]},
-                        {"name": "OPTIMIZE TABLE tablename;", "children": [{"name":"OPTIMIZE TABLE users;"}, {"name":"-- Reclaims unused space and defragments the table data"}]},
-                        {"name": "ANALYZE TABLE tablename;", "children": [{"name":"ANALYZE TABLE products;"}, {"name":"-- Updates statistics about key distribution for the optimizer"}]}
-                    ]}
-                ]
-            }, {
-                "name": "Learning Path Summary", "children": [
-                    {"name": "Beginner (Modules 1-7)"},
-                    {"name": "Intermediate (Modules 8-14)"},
-                    {"name": "Advanced / Production (Modules 15-20)"}
-                ]
-            }]
+    let currentModule = 'git';
+    let isAnimating = false;
+    let currentTransform = null; // Variable to store zoom state across module switches
+
+    // This function sets up all persistent UI controls and should only be run once.
+    function initializeGlobalUI() {
+        
+        function makeDraggable(widget, handle) {
+            if (!widget) return;
+            let offsetX, offsetY, isDragging = false;
+            let hasDragged = false;
+            const dragHandle = handle || widget;
+
+            dragHandle.style.cursor = 'move';
+
+            const onDragStart = (e) => {
+                if (e.target.closest('input, svg, button')) return;
+                
+                if (e.type !== 'touchstart') e.preventDefault(); 
+                isDragging = true;
+                hasDragged = false;
+                widget.classList.add('dragging');
+                
+                const rect = widget.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                offsetX = clientX - rect.left;
+                offsetY = clientY - rect.top;
+                
+                document.addEventListener('mousemove', onDragMove);
+                document.addEventListener('touchmove', onDragMove, { passive: false });
+                document.addEventListener('mouseup', onDragEnd, { once: true });
+                document.addEventListener('touchend', onDragEnd, { once: true });
+            };
+
+            const onDragMove = (e) => {
+                if (!isDragging) return;
+                hasDragged = true;
+                if (e.type === 'touchmove') e.preventDefault();
+                
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                let newLeft = clientX - offsetX;
+                let newTop = clientY - offsetY;
+                
+                const rect = widget.getBoundingClientRect();
+                newLeft = Math.max(8, Math.min(newLeft, window.innerWidth - rect.width - 8));
+                newTop = Math.max(8, Math.min(newTop, window.innerHeight - rect.height - 8));
+                
+                widget.style.left = `${newLeft}px`;
+                widget.style.top = `${newTop}px`;
+                widget.style.right = 'auto';
+                widget.style.bottom = 'auto';
+            };
+
+            const onDragEnd = () => {
+                isDragging = false;
+                widget.classList.remove('dragging');
+                document.removeEventListener('mousemove', onDragMove);
+                document.removeEventListener('touchmove', onDragMove);
+            };
+
+            dragHandle.addEventListener('mousedown', onDragStart);
+            dragHandle.addEventListener('touchstart', onDragStart, { passive: false });
+
+            dragHandle.addEventListener('click', e => {
+                if (hasDragged) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            }, true);
+        }
+
+        makeDraggable(document.getElementById('directory-widget'), document.getElementById('directory-header'));
+        makeDraggable(document.getElementById('controls-widget'));
+        
+        const themeToggleBtn = document.getElementById('dark-mode-toggle');
+        const lightIcon = document.getElementById('theme-icon-light');
+        const darkIcon = document.getElementById('theme-icon-dark');
+
+        const applyTheme = (theme) => {
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                lightIcon.classList.add('hidden');
+                darkIcon.classList.remove('hidden');
+                localStorage.theme = 'dark';
+            } else {
+                document.documentElement.classList.remove('dark');
+                lightIcon.classList.remove('hidden');
+                darkIcon.classList.add('hidden');
+                localStorage.theme = 'light';
+            }
         };
 
-        // --- D3 Mind Map Visualization ---
+        themeToggleBtn.addEventListener('click', () => {
+            applyTheme(localStorage.theme === 'dark' ? 'light' : 'dark');
+        });
 
+        applyTheme(localStorage.theme === 'dark' ? 'dark' : 'light');
+        setupModuleSwitcher(currentModule);
+    }
+
+    // This code runs after the HTML and the data scripts have been loaded.
+    const main = () => {
+        const params = new URLSearchParams(window.location.search);
+        const moduleParam = params.get('module') || 'git';
+        currentModule = moduleParam;
+        
+        const data = (currentModule === 'mysql') ? window.mysqlData : window.gitData;
+
+        if (data) {
+            document.title = data.name;
+            initializeGlobalUI(); // Sets up ALL UI controls once
+            initializeMindmap(data); // Renders the mindmap
+        } else {
+             console.error(`Data for module not found: ${currentModule}. Ensure ${currentModule}_data.js is present and loaded correctly.`);
+             const container = document.getElementById('mindmap-container');
+             if(container) {
+                container.innerHTML = `<div class="flex items-center justify-center h-screen text-center p-4">
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                      <strong class="font-bold">Error:</strong>
+                      <span class="block sm:inline">Could not load data for the '${currentModule}' module. Please ensure <strong>${currentModule}_data.js</strong> is in the same folder as index.html and is not blocked.</span>
+                    </div>
+                 </div>`;
+             }
+        }
+    };
+
+    function setupModuleSwitcher(activeModule) {
+        const gitBtn = document.getElementById('git-btn');
+        const mysqlBtn = document.getElementById('mysql-btn');
+        const slider = document.getElementById('switch-slider');
+
+        const setActiveStyles = (module) => {
+            const targetBtn = module === 'mysql' ? mysqlBtn : gitBtn;
+            const inactiveBtn = module === 'mysql' ? gitBtn : mysqlBtn;
+            
+            if (targetBtn) {
+                slider.style.width = targetBtn.offsetWidth + 'px';
+                slider.style.transform = `translateX(${targetBtn.offsetLeft}px)`;
+                targetBtn.classList.add('active');
+                inactiveBtn.classList.remove('active');
+            }
+        };
+
+        // Set initial slider position after a short delay to ensure correct rendering
+        setTimeout(() => setActiveStyles(activeModule), 100);
+
+        gitBtn.addEventListener('click', () => {
+            if (currentModule !== 'git' && !isAnimating) {
+                setActiveStyles('git');
+                switchModule('git');
+            }
+        });
+
+        mysqlBtn.addEventListener('click', () => {
+            if (currentModule !== 'mysql' && !isAnimating) {
+                setActiveStyles('mysql');
+                switchModule('mysql');
+            }
+        });
+    }
+
+    function switchModule(newModule) {
+        if (isAnimating || newModule === currentModule) return;
+        isAnimating = true;
+
+        const container = d3.select("#mindmap-container");
+        const oldSvg = container.select("svg");
+
+        if (oldSvg.node()) {
+            oldSvg.classed("mindmap-exit-active", true);
+
+            setTimeout(() => {
+                oldSvg.remove();
+                loadNewModule(newModule, container);
+            }, 400); // Match animation duration
+        } else {
+            loadNewModule(newModule, container);
+        }
+    }
+
+    function loadNewModule(newModule, container) {
+        const newData = (newModule === 'mysql') ? window.mysqlData : window.gitData;
+        document.title = newData.name;
+        initializeMindmap(newData);
+
+        const newSvg = container.select("svg");
+        newSvg.classed("mindmap-enter-active", true);
+        
+        currentModule = newModule;
+        const url = new URL(window.location);
+        url.searchParams.set('module', newModule);
+        window.history.pushState({}, '', url);
+
+        setTimeout(() => {
+            newSvg.classed("mindmap-enter-active", false);
+            isAnimating = false;
+        }, 400); // Match animation duration
+    }
+
+
+    function initializeMindmap(data) {
+        // --- D3 Mind Map Visualization ---
         const width = window.innerWidth;
         const height = window.innerHeight;
+
+        // Clear container before appending a new SVG
+        d3.select("#mindmap-container").html("");
 
         const svg = d3.select("#mindmap-container").append("svg")
             .attr("width", width)
@@ -925,6 +499,7 @@
         const zoom = d3.zoom()
             .scaleExtent([0.1, 2])
             .on("zoom", (event) => {
+                currentTransform = event.transform; // Store the transform on every zoom/pan
                 g.attr("transform", event.transform);
             });
 
@@ -933,11 +508,10 @@
         const treemap = d3.tree().nodeSize([40, 20]);
 
         let root = d3.hierarchy(data, d => d.children);
-        const allNodes = root.descendants(); // Get all nodes before collapsing
+        const allNodes = root.descendants();
         root.x0 = height / 2;
         root.y0 = 0;
         
-        // Collapse after the first level
         root.children.forEach(collapse);
         
         let i = 0;
@@ -948,16 +522,6 @@
                 d._children = d.children;
                 d._children.forEach(collapse);
                 d.children = null;
-            }
-        }
-        
-        function expand(d) {
-            if (d._children) {
-                d.children = d._children;
-                d._children = null;
-            }
-            if (d.children) {
-                d.children.forEach(expand);
             }
         }
         
@@ -973,7 +537,7 @@
                 maxLabelLength = Math.max(d.data.name.length, maxLabelLength);
             });
 
-            nodes.forEach(d => { d.y = d.depth * (maxLabelLength * 8.5) });
+            nodes.forEach(d => { d.y = d.depth * (maxLabelLength * 9) });
 
 
             // --- Nodes ---
@@ -981,26 +545,24 @@
                 .data(nodes, d => d.id || (d.id = ++i));
 
             const nodeEnter = node.enter().append("g")
-                .attr("class", "node") // Set base class, specific classes will be toggled later
+                .attr("class", "node")
                 .attr("transform", d => `translate(${source.y0},${source.x0})`)
                 .on("click", click)
                 .on("mouseover", function(event, d) {
-                    // Highlight the path from the hovered node to the root
                     const ancestors = d.ancestors();
                     const ancestorIds = new Set(ancestors.map(node => node.id));
 
                     g.selectAll('g.node')
                         .filter(node_d => ancestorIds.has(node_d.id))
                         .classed('node--ancestor-highlight', true)
-                        .raise(); // Bring highlighted nodes to the front
+                        .raise();
 
                     g.selectAll('path.link')
                         .filter(link_d => ancestorIds.has(link_d.id) && link_d.parent && ancestorIds.has(link_d.parent.id))
                         .classed('link--hover', true)
-                        .raise(); // Bring highlighted links to the front
+                        .raise();
                 })
                 .on("mouseout", function(event, d) {
-                    // Remove all ancestor highlights on mouse out
                     g.selectAll('.node--ancestor-highlight').classed('node--ancestor-highlight', false);
                     g.selectAll('.link--hover').classed('link--hover', false);
                 });
@@ -1024,12 +586,11 @@
 
             const nodeUpdate = nodeEnter.merge(node);
             
-            // Update classes for all nodes (entering or updating) to handle state changes
             nodeUpdate
                 .classed('leaf-node', d => !d.children && !d._children)
                 .classed('collapsed-node', d => !!d._children)
                 .classed('topic-node', d => !!d.children)
-                .classed('node--expanded-highlight', d => d.depth > 0 && !!d.children); // Highlight if expanded and not root
+                .classed('node--expanded-highlight', d => d.depth > 0 && !!d.children);
             
             nodeUpdate.transition()
                 .duration(duration)
@@ -1105,7 +666,7 @@
         }
         
         function click(event, d) {
-            if (event.defaultPrevented) return; // ignore click if event was handled
+            if (event.defaultPrevented) return;
             if (d.children) {
                 d._children = d.children;
                 d.children = null;
@@ -1123,34 +684,32 @@
             const parentRightX = d.y + (d.rectWidth || 0);
             const childLeftX = s.y;
             
-            const path = `M ${parentRightX} ${d.x}
+            return `M ${parentRightX} ${d.x}
                     C ${(parentRightX + childLeftX) / 2} ${d.x},
                       ${(parentRightX + childLeftX) / 2} ${s.x},
-                      ${childLeftX} ${s.x}`
-            return path
+                      ${childLeftX} ${s.x}`;
         }
         
-        // Center the root node initially
-        const initialTransform = d3.zoomIdentity.translate(100, height / 2);
-        svg.call(zoom.transform, initialTransform);
+        if (currentTransform) {
+            svg.call(zoom.transform, currentTransform);
+        } else {
+            const initialTransform = d3.zoomIdentity.translate(100, height / 2);
+            svg.call(zoom.transform, initialTransform);
+            currentTransform = initialTransform;
+        }
 
-        // --- Expand/Collapse All Logic ---
         const collapseAllBtn = document.getElementById('collapse-all-btn');
 
         collapseAllBtn.addEventListener('click', () => {
-            if (root.children) {
-                 root.children.forEach(collapse);
-            }
+            root.children.forEach(collapse);
             update(root);
         });
 
-        // --- Search / Directory Logic ---
         const searchInput = document.getElementById('search-input');
         const searchResults = document.getElementById('search-results');
         const directoryHeader = document.getElementById('directory-header');
         const directoryContent = document.getElementById('directory-content');
         const directoryChevron = document.getElementById('directory-chevron');
-        // The 'allNodes' variable is now defined above, before the nodes are collapsed, so it contains the full list.
 
         function clearSearch() {
             searchInput.value = '';
@@ -1159,22 +718,18 @@
         }
 
         function expandToNode(d) {
-            let ancestors = [];
             let current = d;
             while (current.parent) {
-                ancestors.unshift(current);
+                if (current.parent._children) {
+                    current.parent.children = current.parent._children;
+                    current.parent._children = null;
+                }
                 current = current.parent;
             }
-            ancestors.forEach(node => {
-                if (node.parent && node.parent._children) {
-                    node.parent.children = node.parent._children;
-                    node.parent._children = null;
-                }
-            });
         }
 
         function centerNode(d) {
-            const scale = 1;
+            const scale = currentTransform ? currentTransform.k : 1;
             const x = -d.y * scale + width / 2 - (d.rectWidth ? d.rectWidth / 2 * scale : 0);
             const y = -d.x * scale + height / 2;
             const transform = d3.zoomIdentity.translate(x, y).scale(scale);
@@ -1201,36 +756,30 @@
                         resultItem.textContent = d.data.name;
                         resultItem.addEventListener('click', () => {
                             expandToNode(d);
-                            update(root); // Redraw the tree with expanded nodes
+                            update(root);
 
-                            // We need to wait for the update transition to finish
                             setTimeout(() => {
-                                g.selectAll("g.node").classed("node--searched", false); // Clear previous
-                                
-                                const nodeElement = g.selectAll("g.node")
+                                g.selectAll("g.node").classed("node--searched", false);
+                                g.selectAll("g.node")
                                     .filter(nodeData => nodeData.id === d.id)
                                     .classed("node--searched", true);
-
                                 centerNode(d);
-                            }, 300); // 300ms delay, slightly longer than update duration
+                            }, 300);
                         });
                         searchResults.appendChild(resultItem);
                     });
                 }
             }
             
-            // After populating or clearing results, readjust the container height
-            if (directoryContent.style.maxHeight !== 'px') {
-                // Use a slight delay to allow the DOM to update with new/cleared results
+            if (directoryContent.style.maxHeight !== '0px') {
                 setTimeout(() => {
                     directoryContent.style.maxHeight = directoryContent.scrollHeight + "px";
                 }, 50);
             }
         });
-
-        const toggleDirectory = (e) => {
-            // Prevent the drag from firing when clicking the collapse icon
-            if(e.target.closest('svg')) {
+        
+        directoryHeader.addEventListener('click', (e) => {
+             if(e.target.closest('svg')) {
                 const isCollapsed = directoryContent.style.maxHeight === '0px' || directoryContent.style.maxHeight === '';
                 if (isCollapsed) {
                     directoryContent.style.maxHeight = directoryContent.scrollHeight + "px";
@@ -1238,164 +787,20 @@
                 } else {
                     directoryContent.style.maxHeight = '0px';
                     directoryChevron.classList.add('rotate-180');
-                    clearSearch(); // Clear search when closing
+                    clearSearch();
                 }
             }
-        };
-        directoryHeader.addEventListener('click', toggleDirectory);
-
-        // --- Collapsible Instructions ---
-        const instructionsHeader = document.getElementById('instructions-header');
-        const instructionsContent = document.getElementById('instructions-content');
-        const instructionsChevron = document.getElementById('instructions-chevron');
-
-        if (instructionsHeader && instructionsContent && instructionsChevron) {
-            const toggleInstructions = (e) => {
-                 // Prevent the drag from firing when clicking the collapse icon
-                if(e.target.closest('svg')) {
-                    const isCollapsed = instructionsContent.style.maxHeight === '0px' || instructionsContent.style.maxHeight === '';
-                    if (isCollapsed) {
-                        instructionsContent.style.maxHeight = instructionsContent.scrollHeight + "px";
-                        instructionsChevron.classList.remove('rotate-180');
-                    } else {
-                        instructionsContent.style.maxHeight = '0px';
-                        instructionsChevron.classList.add('rotate-180');
-                    }
-                }
-            };
-
-            instructionsHeader.addEventListener('click', toggleInstructions);
-
-            // Set initial state - collapsed by default
-            instructionsContent.style.maxHeight = '0px';
-            instructionsChevron.classList.add('rotate-180');
-        }
-
-        // --- Draggable UI Widgets ---
-        function makeDraggable(widget, handle) {
-            let offsetX, offsetY, isDragging = false;
-            let hasDragged = false; // To distinguish click from drag
-            const dragHandle = handle || widget;
-
-            dragHandle.style.cursor = 'move';
-
-            const onDragStart = (e) => {
-                // Ignore clicks on specific interactive elements like inputs or the collapse icon, but allow buttons to be dragged.
-                if (e.target.closest('input, svg')) {
-                    return;
-                }
-                
-                // Use preventDefault for touch events to stop page scrolling, and for mouse to prevent selection
-                if (e.type === 'touchstart') {
-                    // This is required to be able to call preventDefault in a touch listener.
-                } else {
-                    e.preventDefault(); 
-                }
-
-                isDragging = true;
-                hasDragged = false; // Reset on new drag start
-                widget.classList.add('dragging');
-                
-                const rect = widget.getBoundingClientRect();
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-                offsetX = clientX - rect.left;
-                offsetY = clientY - rect.top;
-                
-                document.addEventListener('mousemove', onDragMove);
-                document.addEventListener('touchmove', onDragMove, { passive: false });
-                
-                document.addEventListener('mouseup', onDragEnd, { once: true });
-                document.addEventListener('touchend', onDragEnd, { once: true });
-            };
-
-            const onDragMove = (e) => {
-                if (!isDragging) return;
-                hasDragged = true; // If we moved, it's a drag
-                
-                // Prevent scrolling on touch devices
-                if (e.type === 'touchmove') {
-                    e.preventDefault();
-                }
-                
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-                let newLeft = clientX - offsetX;
-                let newTop = clientY - offsetY;
-                
-                const rect = widget.getBoundingClientRect();
-                // Constrain movement within the viewport with a small padding
-                newLeft = Math.max(8, Math.min(newLeft, window.innerWidth - rect.width - 8));
-                newTop = Math.max(8, Math.min(newTop, window.innerHeight - rect.height - 8));
-                
-                widget.style.left = `${newLeft}px`;
-                widget.style.top = `${newTop}px`;
-                widget.style.right = 'auto'; // remove positioning constraints
-                widget.style.bottom = 'auto';
-            };
-
-            const onDragEnd = () => {
-                isDragging = false;
-                widget.classList.remove('dragging');
-                document.removeEventListener('mousemove', onDragMove);
-                document.removeEventListener('touchmove', onDragMove);
-            };
-
-            dragHandle.addEventListener('mousedown', onDragStart);
-            dragHandle.addEventListener('touchstart', onDragStart, { passive: false });
-
-            // This listener prevents the 'click' event from firing on the button
-            // if the user has dragged the widget. It must be in the capture phase.
-            dragHandle.addEventListener('click', e => {
-                if (hasDragged) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-            }, true);
-        }
-
-        // Initialize Draggable Widgets
-        const directoryWidget = document.getElementById('directory-widget');
-        const instructionsWidget = document.getElementById('instructions-widget');
-        const controlsWidget = document.getElementById('controls-widget');
-
-        if (directoryWidget) makeDraggable(directoryWidget, document.getElementById('directory-header'));
-        if (instructionsWidget) makeDraggable(instructionsWidget, document.getElementById('instructions-header'));
-        if (controlsWidget) makeDraggable(controlsWidget, controlsWidget);
-        
-        // --- Dark Mode Toggle Logic ---
-        const themeToggleBtn = document.getElementById('dark-mode-toggle');
-        const lightIcon = document.getElementById('theme-icon-light');
-        const darkIcon = document.getElementById('theme-icon-dark');
-
-        const applyTheme = (theme) => {
-            if (theme === 'dark') {
-                document.documentElement.classList.add('dark');
-                lightIcon.classList.add('hidden');
-                darkIcon.classList.remove('hidden');
-                localStorage.theme = 'dark';
-            } else {
-                document.documentElement.classList.remove('dark');
-                lightIcon.classList.remove('hidden');
-                darkIcon.classList.add('hidden');
-                localStorage.theme = 'light';
-            }
-        };
-
-        themeToggleBtn.addEventListener('click', () => {
-            const currentTheme = localStorage.theme === 'dark' ? 'light' : 'dark';
-            applyTheme(currentTheme);
         });
-
-        // Apply theme on initial load
-        if (localStorage.theme === 'dark') {
-            applyTheme('dark');
-        } else {
-            applyTheme('light');
-        }
-
+        
+        setTimeout(() => {
+            directoryContent.style.maxHeight = directoryContent.scrollHeight + "px";
+            directoryChevron.classList.remove('rotate-180');
+        }, 300);
+    }
+    
+    // Initialize the application
+    main();
     </script>
 </body>
 </html>
+

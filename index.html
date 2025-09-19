@@ -282,6 +282,7 @@
     let isAnimating = false;
     let currentTransform = null; // Variable to store zoom state across module switches
     let isSearchPanelOpen = true; // Variable to store search panel state
+    let searchHandler = null; // To hold the reference to the current search event listener
 
     // This function sets up all persistent UI controls and should only be run once.
     function initializeGlobalUI() {
@@ -295,8 +296,8 @@
             dragHandle.style.cursor = 'move';
 
             const onDragStart = (e) => {
-                // Allow dragging on the button container, but not on specific inner elements.
-                if (e.target.closest('input, svg')) return;
+                 // Allow dragging on the button container itself, but not the button inside
+                if (e.target.closest('input, svg, button')) return;
                 
                 if (e.type !== 'touchstart') e.preventDefault(); 
                 isDragging = true;
@@ -466,6 +467,13 @@
     function switchModule(newModule) {
         if (isAnimating || newModule === currentModule) return;
         isAnimating = true;
+        
+        // Reset the search panel on tab switch
+        const searchInput = document.getElementById('search-input');
+        const searchResults = document.getElementById('search-results');
+        if (searchInput) searchInput.value = '';
+        if (searchResults) searchResults.innerHTML = '';
+
 
         const container = d3.select("#mindmap-container");
         const oldSvg = container.select("svg");
@@ -728,8 +736,14 @@
         const searchInput = document.getElementById('search-input');
         const searchResults = document.getElementById('search-results');
         
-        // This logic is now only for search functionality, not collapse/expand
-        searchInput.addEventListener('input', () => {
+        // --- START FIX ---
+        // Remove the previous event listener if it exists to prevent duplicates.
+        if (searchHandler) {
+            searchInput.removeEventListener('input', searchHandler);
+        }
+
+        // Define the new handler within this scope to create a closure over the current mindmap's data and functions.
+        searchHandler = () => {
             const searchTerm = searchInput.value.toLowerCase().trim();
             searchResults.innerHTML = '';
             g.selectAll("g.node").classed("node--searched", false);
@@ -767,7 +781,11 @@
                     directoryContent.style.maxHeight = directoryContent.scrollHeight + "px";
                 }, 50);
             }
-        });
+        };
+        
+        // Add the new, correctly scoped event listener.
+        searchInput.addEventListener('input', searchHandler);
+        // --- END FIX ---
         
         // Restore search panel state visually
         const directoryContent = document.getElementById('directory-content');
@@ -780,6 +798,28 @@
         } else {
             directoryContent.style.maxHeight = '0px';
             directoryChevron.classList.add('rotate-180');
+        }
+
+        function expandToNode(d) {
+            let current = d;
+            while (current.parent) {
+                if (current.parent._children) {
+                    current.parent.children = current.parent._children;
+                    current.parent._children = null;
+                }
+                current = current.parent;
+            }
+        }
+
+        function centerNode(d) {
+            const scale = currentTransform ? currentTransform.k : 1;
+            const x = -d.y * scale + width / 2 - (d.rectWidth ? d.rectWidth / 2 * scale : 0);
+            const y = -d.x * scale + height / 2;
+            const transform = d3.zoomIdentity.translate(x, y).scale(scale);
+
+            svg.transition()
+                .duration(750)
+                .call(zoom.transform, transform);
         }
     }
     

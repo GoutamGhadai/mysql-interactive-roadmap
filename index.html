@@ -28,7 +28,7 @@
             --input-border: #d1d5db;
             --input-text: #111827;
             --result-hover-bg: #f0f0f0;
-            --button-text: #475569;
+            --button-text: #6b7280;
             --button-text-active: #111827;
             --button-hover-bg: rgba(255, 255, 255, 0.6);
             --button-bg: rgba(255, 255, 255, 0.3);
@@ -55,7 +55,7 @@
             --input-border: #3c3c3e;
             --input-text: #e0e0e0;
             --result-hover-bg: #3c3c3e;
-            --button-text: #94a3b8;
+            --button-text: #9ca3af;
             --button-text-active: #ffffff;
             --button-hover-bg: rgba(255, 255, 255, 0.1);
             --button-bg: rgba(255, 255, 255, 0.05);
@@ -269,6 +269,7 @@
             <div id="switch-slider"></div>
             <button id="git-btn">Git</button>
             <button id="mysql-btn">MySQL</button>
+            <button id="pyspark-btn">PySpark</button>
         </div>
     </div>
 
@@ -280,6 +281,7 @@
     <!-- Scripts are moved to the end of the body for reliable execution order -->
     <script src="./git_data.js"></script>
     <script src="./mysql_data.js"></script>
+    <script src="./pyspark_data.js"></script>
     <script>
     let currentModule = 'git';
     let isAnimating = false;
@@ -300,7 +302,7 @@
 
             const onDragStart = (e) => {
                  // Allow dragging on the button container itself, but not the button inside
-                if (e.target.closest('input, svg')) return;
+                if (e.target.closest('input, svg, button')) return;
                 
                 if (e.type !== 'touchstart') e.preventDefault(); 
                 isDragging = true;
@@ -412,7 +414,8 @@
         const moduleParam = params.get('module') || 'git';
         currentModule = moduleParam;
         
-        const data = (currentModule === 'mysql') ? window.mysqlData : window.gitData;
+        const data = (currentModule === 'mysql') ? window.mysqlData : (currentModule === 'pyspark') ? window.pysparkData : window.gitData;
+
 
         if (data) {
             document.title = data.name;
@@ -435,17 +438,23 @@
     function setupModuleSwitcher(activeModule) {
         const gitBtn = document.getElementById('git-btn');
         const mysqlBtn = document.getElementById('mysql-btn');
+        const pysparkBtn = document.getElementById('pyspark-btn');
         const slider = document.getElementById('switch-slider');
 
         const setActiveStyles = (module) => {
-            const targetBtn = module === 'mysql' ? mysqlBtn : gitBtn;
-            const inactiveBtn = module === 'mysql' ? gitBtn : mysqlBtn;
+            let targetBtn;
+            if (module === 'mysql') targetBtn = mysqlBtn;
+            else if (module === 'pyspark') targetBtn = pysparkBtn;
+            else targetBtn = gitBtn;
+
+            gitBtn.classList.remove('active');
+            mysqlBtn.classList.remove('active');
+            pysparkBtn.classList.remove('active');
             
             if (targetBtn) {
                 slider.style.width = targetBtn.offsetWidth + 'px';
                 slider.style.transform = `translateX(${targetBtn.offsetLeft}px)`;
                 targetBtn.classList.add('active');
-                inactiveBtn.classList.remove('active');
             }
         };
 
@@ -463,6 +472,13 @@
             if (currentModule !== 'mysql' && !isAnimating) {
                 setActiveStyles('mysql');
                 switchModule('mysql');
+            }
+        });
+        
+        pysparkBtn.addEventListener('click', () => {
+            if (currentModule !== 'pyspark' && !isAnimating) {
+                setActiveStyles('pyspark');
+                switchModule('pyspark');
             }
         });
     }
@@ -494,7 +510,7 @@
     }
 
     function loadNewModule(newModule, container) {
-        const newData = (newModule === 'mysql') ? window.mysqlData : window.gitData;
+        const newData = (newModule === 'mysql') ? window.mysqlData : (newModule === 'pyspark') ? window.pysparkData : window.gitData;
         document.title = newData.name;
         initializeMindmap(newData);
 

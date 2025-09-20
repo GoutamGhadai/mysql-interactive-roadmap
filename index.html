@@ -84,7 +84,7 @@
         .node:hover .node-content {
             transform: translateY(-3px);
         }
-        .node rect {
+        .node .node-background {
             cursor: pointer;
             rx: 6;
             stroke-width: 1.5px;
@@ -92,16 +92,16 @@
             transition: stroke 0.2s ease-in-out, filter 0.2s ease-in-out, fill 0.3s ease-in-out;
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
         }
-        .node.topic-node rect { fill: var(--node-topic-bg); }
-        .node.collapsed-node rect { fill: var(--node-collapsed-bg); }
-        .node.leaf-node rect { fill: var(--node-leaf-bg); stroke: var(--node-leaf-stroke);}
+        .node.topic-node .node-background { fill: var(--node-topic-bg); }
+        .node.collapsed-node .node-background { fill: var(--node-collapsed-bg); }
+        .node.leaf-node .node-background { fill: var(--node-leaf-bg); stroke: var(--node-leaf-stroke);}
 
-        .node:hover rect, .node.node--ancestor-highlight rect {
+        .node:hover > .node-content > .node-background, .node.node--ancestor-highlight > .node-content > .node-background {
             stroke: var(--hover-stroke);
             filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
         }
 
-        .node.node--expanded-highlight rect {
+        .node.node--expanded-highlight .node-background {
             stroke: var(--hover-stroke);
             stroke-width: 2.5px;
         }
@@ -125,9 +125,9 @@
             fill: none;
             stroke: var(--link-stroke);
             stroke-width: 1px;
-            transition: stroke 0.3s ease-in-out, stroke-width 0.3s ease-in-out;
+            transition: stroke 0.3s ease-in-out, stroke-width 0.3s ease-in-out, opacity 0.4s ease-in-out;
         }
-        .link.link--hover, .link.link--expanded-highlight {
+        .link.link--expanded-highlight {
             stroke: var(--hover-stroke);
             stroke-width: 1.5px;
         }
@@ -135,6 +135,11 @@
             stroke: var(--completed-stroke);
             stroke-width: 2px;
         }
+        .link.link--flowing {
+            stroke-width: 2.5px;
+            stroke: url(#flow-gradient);
+        }
+
 
         .glass-ui {
             background-color: var(--glass-bg);
@@ -151,7 +156,7 @@
             user-select: none;
         }
 
-        .node.node--searched rect {
+        .node.node--searched .node-background {
             stroke: var(--searched-stroke);
             stroke-width: 3px;
             animation: pulse 1.5s infinite;
@@ -161,12 +166,13 @@
         .node.node--completed {
             opacity: 0.6;
         }
-        .node.node--completed rect {
+        .node.node--completed .node-background {
             stroke: var(--completed-stroke) !important;
             stroke-width: 2px !important;
         }
         .checkbox-group {
             cursor: pointer;
+            transition: opacity 0.2s ease-in-out;
         }
         .checkbox-rect {
             fill: var(--node-topic-bg);
@@ -180,7 +186,19 @@
             fill: none;
             stroke-linecap: round;
             stroke-linejoin: round;
-            transition: opacity 0.2s ease;
+            stroke-dasharray: 20;
+            stroke-dashoffset: 20;
+            transition: stroke-dashoffset 0.4s ease-in-out;
+        }
+
+        .node--completed .checkmark {
+            stroke-dashoffset: 0;
+        }
+
+        /* Focus Mode Styles */
+        .node.unfocused, .link.unfocused {
+            opacity: 0.1 !important;
+            pointer-events: none;
         }
 
         @keyframes pulse {
@@ -305,7 +323,6 @@
         </div>
     </div>
 
-
     <div id="controls-widget" class="absolute top-24 right-4 lg:top-4 lg:left-4 lg:right-auto z-10 glass-ui rounded-lg">
         <button id="collapse-all-btn" class="px-4 py-2 rounded-lg font-semibold transition-colors" style="color: var(--button-text); background-color: transparent;" onmouseover="this.style.backgroundColor = 'var(--button-hover-bg)'" onmouseout="this.style.backgroundColor = 'transparent'">Collapse All</button>
     </div>
@@ -320,6 +337,7 @@
     let currentTransform = null; // Variable to store zoom state across module switches
     let isSearchPanelOpen = true; // Variable to store search panel state
     let searchHandler = null; // To hold the reference to the current search event listener
+    let isFocusModeActive = false;
 
     // This function sets up all persistent UI controls and should only be run once.
     function initializeGlobalUI() {
@@ -608,7 +626,13 @@
 
         const svg = d3.select("#mindmap-container").append("svg")
             .attr("width", width)
-            .attr("height", height);
+            .attr("height", height)
+            .on("dblclick", (event) => {
+                if (isFocusModeActive) {
+                    event.stopPropagation();
+                    exitFocusMode();
+                }
+            });
 
         const g = svg.append("g");
 
@@ -668,6 +692,14 @@
                 .attr("transform", d => `translate(${source.y0},${source.x0})`)
                 .style("opacity", 1e-6) // Start nodes as transparent
                 .on("click", click)
+                .on("dblclick", (event, d) => {
+                    event.stopPropagation();
+                    if (isFocusModeActive) {
+                        exitFocusMode();
+                    } else {
+                        enterFocusMode(event, d);
+                    }
+                })
                 .on("mouseover", function(event, d) {
                     const ancestors = d.ancestors();
                     const ancestorIds = new Set(ancestors.map(node => node.id));
@@ -691,6 +723,7 @@
                 .attr('class', 'node-content');
 
             nodeContent.append("rect")
+                .attr("class", "node-background")
                 .attr("width", 0)
                 .attr("height", 0);
             
@@ -698,9 +731,17 @@
                 .attr("dy", ".35em")
                 .text(d => d.data.name);
 
-             const checkboxGroup = nodeContent.append('g')
+            const checkboxGroup = nodeContent.append('g')
                 .attr('class', 'checkbox-group')
                 .on('click', toggleComplete);
+
+            // Add a larger, invisible rectangle to act as a generous click target.
+            checkboxGroup.append('rect')
+                .attr('width', 24)
+                .attr('height', 24)
+                .attr('x', -4)
+                .attr('y', -4)
+                .style('fill', 'transparent');
 
             checkboxGroup.append('rect')
                 .attr('class', 'checkbox-rect')
@@ -710,7 +751,7 @@
             checkboxGroup.append('path')
                 .attr('class', 'checkmark')
                 .attr('d', 'M4 8l2.5 2.5L12 5');
-            
+
             nodeContent.append('path')
                 .attr('class', 'edge-marker')
                 .attr('d', 'M0,-5L6,0L0,5')
@@ -742,26 +783,27 @@
                 const internalSpacing = 8;
                 const rectHeight = 26;
 
-                const rectWidth = horizontalPadding + bbox.width + internalSpacing + checkboxWidth + horizontalPadding;
+                const rectWidth = horizontalPadding + checkboxWidth + internalSpacing + bbox.width + horizontalPadding;
                 d.rectWidth = rectWidth;
 
-                d3.select(this).select("rect").transition()
+                d3.select(this).select(".node-background").transition()
                     .duration(duration)
                     .attr("width", rectWidth)
                     .attr("height", rectHeight)
                     .attr("x", 0)
                     .attr("y", -rectHeight / 2);
 
-                d3.select(this).select("text").transition()
-                    .duration(duration)
-                    .attr("x", horizontalPadding)
-                    .attr("text-anchor", "start");
-                
-                const checkboxX = rectWidth - horizontalPadding - checkboxWidth;
+                const checkboxX = horizontalPadding;
                 d3.select(this).select(".checkbox-group")
                     .transition()
                     .duration(duration)
                     .attr('transform', `translate(${checkboxX}, -8)`);
+                
+                const textX = checkboxX + checkboxWidth + internalSpacing;
+                d3.select(this).select("text").transition()
+                    .duration(duration)
+                    .attr("x", textX)
+                    .attr("text-anchor", "start");
             });
             
             nodeUpdate.select('.checkmark').style('opacity', d => d.data.completed ? 1 : 0);
@@ -841,19 +883,60 @@
 
         function setCompletionStatus(node, status) {
             node.data.completed = status;
-            // Recursively apply the status to all children (both visible and hidden)
             const children = node.children || node._children;
             if (children) {
                 children.forEach(child => setCompletionStatus(child, status));
             }
         }
 
+        function checkAndUpdateParents(node) {
+            if (!node.parent) {
+                return;
+            }
+            const parent = node.parent;
+            const siblings = parent.children || parent._children;
+            if (!siblings) {
+                return;
+            }
+            const allChildrenCompleted = siblings.every(child => child.data.completed);
+            if (parent.data.completed === allChildrenCompleted) {
+                return;
+            }
+            parent.data.completed = allChildrenCompleted;
+            checkAndUpdateParents(parent);
+        }
+
         function toggleComplete(event, d) {
-            event.stopPropagation(); // Prevent node from expanding/collapsing
+            event.stopPropagation();
             const newStatus = !d.data.completed;
             setCompletionStatus(d, newStatus);
+            checkAndUpdateParents(d);
             saveProgress(root, currentModule);
-            update(root); // Redraw the entire tree to reflect the cascaded changes
+            update(root);
+        }
+
+        function enterFocusMode(event, d) {
+            event.stopPropagation();
+            isFocusModeActive = true;
+            
+            const focusBranchIds = new Set();
+            d.ancestors().forEach(node => focusBranchIds.add(node.id));
+            d.descendants().forEach(node => focusBranchIds.add(node.id));
+
+            g.selectAll('.node, .link').classed('unfocused', true);
+            
+            g.selectAll('.node')
+                .filter(node => focusBranchIds.has(node.id))
+                .classed('unfocused', false);
+            
+            g.selectAll('.link')
+                .filter(link => focusBranchIds.has(link.id) && link.parent && focusBranchIds.has(link.parent.id))
+                .classed('unfocused', false);
+        }
+
+        function exitFocusMode() {
+            isFocusModeActive = false;
+            g.selectAll('.unfocused').classed('unfocused', false);
         }
 
         function diagonal(s, d) {

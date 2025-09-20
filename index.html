@@ -592,7 +592,7 @@
     }
 
     function loadNewModule(newModule, container) {
-        const newData = (newModule === 'mysql') ? window.mysqlData : (currentModule === 'pyspark') ? window.pysparkData : window.gitData;
+        const newData = (newModule === 'mysql') ? window.mysqlData : (newModule === 'pyspark') ? window.pysparkData : window.gitData;
         document.title = newData.name;
         initializeMindmap(newData);
 

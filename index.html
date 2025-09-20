@@ -20,6 +20,7 @@
             --link-stroke: #cbd5e1;
             --hover-stroke: #4f46e5;
             --searched-stroke: #f59e0b;
+            --completed-stroke: #22c55e;
             --glass-bg: rgba(255, 255, 255, 0.75);
             --glass-border: rgba(255, 255, 255, 0.25);
             --glass-header-text: #1c1c1e;
@@ -47,6 +48,7 @@
             --link-stroke: #8b949e;
             --hover-stroke: #2563eb;
             --searched-stroke: #f59e0b;
+            --completed-stroke: #16a34a;
             --glass-bg: rgba(28, 28, 30, 0.75);
             --glass-border: rgba(60, 60, 62, 0.5);
             --glass-header-text: #f5f5f7;
@@ -129,6 +131,10 @@
             stroke: var(--hover-stroke);
             stroke-width: 1.5px;
         }
+        .link.link--completed {
+            stroke: var(--completed-stroke);
+            stroke-width: 2px;
+        }
 
         .glass-ui {
             background-color: var(--glass-bg);
@@ -149,6 +155,32 @@
             stroke: var(--searched-stroke);
             stroke-width: 3px;
             animation: pulse 1.5s infinite;
+        }
+        
+        /* Progress Tracking Styles */
+        .node.node--completed {
+            opacity: 0.6;
+        }
+        .node.node--completed rect {
+            stroke: var(--completed-stroke) !important;
+            stroke-width: 2px !important;
+        }
+        .checkbox-group {
+            cursor: pointer;
+        }
+        .checkbox-rect {
+            fill: var(--node-topic-bg);
+            stroke: var(--link-stroke);
+            stroke-width: 1px;
+            rx: 3;
+        }
+        .checkmark {
+            stroke: var(--completed-stroke);
+            stroke-width: 2.5px;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: opacity 0.2s ease;
         }
 
         @keyframes pulse {
@@ -530,6 +562,41 @@
         }, 400); // Match animation duration
     }
 
+    function generateNodeId(d) {
+        // Create a stable ID based on depth and name
+        return `${d.depth}-${d.data.name.replace(/\s+/g, '-')}`;
+    }
+
+    function saveProgress(root, module) {
+        try {
+            const completedNodes = [];
+            root.each(d => {
+                if (d.data.completed) {
+                    completedNodes.push(generateNodeId(d));
+                }
+            });
+            localStorage.setItem(`${module}-progress`, JSON.stringify(completedNodes));
+        } catch (e) {
+            console.error("Failed to save progress to localStorage:", e);
+        }
+    }
+
+    function loadProgress(root, module) {
+        try {
+            const savedProgress = localStorage.getItem(`${module}-progress`);
+            if (savedProgress) {
+                const completedNodeIds = new Set(JSON.parse(savedProgress));
+                root.each(d => {
+                    if (completedNodeIds.has(generateNodeId(d))) {
+                        d.data.completed = true;
+                    }
+                });
+            }
+        } catch (e) {
+            console.error("Failed to load progress from localStorage:", e);
+        }
+    }
+
 
     function initializeMindmap(data) {
         // --- D3 Mind Map Visualization ---
@@ -558,6 +625,9 @@
 
         let root = d3.hierarchy(data, d => d.children);
         const allNodes = root.descendants();
+        
+        loadProgress(root, currentModule);
+
         root.x0 = height / 2;
         root.y0 = 0;
         
@@ -627,6 +697,19 @@
             nodeContent.append("text")
                 .attr("dy", ".35em")
                 .text(d => d.data.name);
+
+             const checkboxGroup = nodeContent.append('g')
+                .attr('class', 'checkbox-group')
+                .on('click', toggleComplete);
+
+            checkboxGroup.append('rect')
+                .attr('class', 'checkbox-rect')
+                .attr('width', 16)
+                .attr('height', 16);
+            
+            checkboxGroup.append('path')
+                .attr('class', 'checkmark')
+                .attr('d', 'M4 8l2.5 2.5L12 5');
             
             nodeContent.append('path')
                 .attr('class', 'edge-marker')
@@ -640,23 +723,26 @@
                 .classed('leaf-node', d => !d.children && !d._children)
                 .classed('collapsed-node', d => !!d._children)
                 .classed('topic-node', d => !!d.children)
-                .classed('node--expanded-highlight', d => d.depth > 0 && !!d.children);
+                .classed('node--expanded-highlight', d => d.depth > 0 && !!d.children)
+                .classed('node--completed', d => d.data.completed);
             
             nodeUpdate.transition()
                 .duration(duration)
                 .attr("transform", d => `translate(${d.y},${d.x})`)
                 .style("opacity", 1) // Fade nodes in
-                // Stagger animation for new child nodes
                 .delay((d, i) => d.parent === source ? i * 20 : 0);
             
             nodeUpdate.each(function(d) {
                 const textNode = d3.select(this).select("text").node();
                 if (!textNode) return;
                 const bbox = textNode.getBBox();
-                const padding = 24;
+                
+                const checkboxWidth = 16;
+                const horizontalPadding = 12;
+                const internalSpacing = 8;
                 const rectHeight = 26;
-                const rectWidth = bbox.width + padding;
 
+                const rectWidth = horizontalPadding + bbox.width + internalSpacing + checkboxWidth + horizontalPadding;
                 d.rectWidth = rectWidth;
 
                 d3.select(this).select("rect").transition()
@@ -668,9 +754,17 @@
 
                 d3.select(this).select("text").transition()
                     .duration(duration)
-                    .attr("x", rectWidth / 2)
-                    .attr("text-anchor", "middle");
+                    .attr("x", horizontalPadding)
+                    .attr("text-anchor", "start");
+                
+                const checkboxX = rectWidth - horizontalPadding - checkboxWidth;
+                d3.select(this).select(".checkbox-group")
+                    .transition()
+                    .duration(duration)
+                    .attr('transform', `translate(${checkboxX}, -8)`);
             });
+            
+            nodeUpdate.select('.checkmark').style('opacity', d => d.data.completed ? 1 : 0);
             
             nodeUpdate.select('.edge-marker')
                 .transition()
@@ -696,21 +790,23 @@
                     return diagonal(o, o)
                 });
             
-            // Add the "drawing" effect for new links
             linkEnter.each(function() {
                 const path = d3.select(this);
                 const totalLength = this.getTotalLength();
-                path.attr("stroke-dasharray", `${totalLength} ${totalLength}`)
-                    .attr("stroke-dashoffset", totalLength)
-                    .transition()
-                    .duration(duration)
-                    .delay(duration / 2) // Start drawing halfway through the node transition
-                    .attr("stroke-dashoffset", 0);
+                if(totalLength > 0) {
+                    path.attr("stroke-dasharray", `${totalLength} ${totalLength}`)
+                        .attr("stroke-dashoffset", totalLength)
+                        .transition()
+                        .duration(duration)
+                        .delay(duration / 2) 
+                        .attr("stroke-dashoffset", 0);
+                }
             });
                 
             const linkUpdate = linkEnter.merge(link);
 
-            linkUpdate.classed('link--expanded-highlight', d => d.depth > 0 && !!d.children);
+            linkUpdate.classed('link--expanded-highlight', d => d.depth > 0 && !!d.children)
+                .classed('link--completed', d => d.data.completed);
 
             linkUpdate.transition()
                 .duration(duration)
@@ -740,8 +836,24 @@
                 d._children = null;
             }
             update(d);
-            // After updating the tree, smoothly pan and zoom to the clicked node.
             centerNode(d);
+        }
+
+        function setCompletionStatus(node, status) {
+            node.data.completed = status;
+            // Recursively apply the status to all children (both visible and hidden)
+            const children = node.children || node._children;
+            if (children) {
+                children.forEach(child => setCompletionStatus(child, status));
+            }
+        }
+
+        function toggleComplete(event, d) {
+            event.stopPropagation(); // Prevent node from expanding/collapsing
+            const newStatus = !d.data.completed;
+            setCompletionStatus(d, newStatus);
+            saveProgress(root, currentModule);
+            update(root); // Redraw the entire tree to reflect the cascaded changes
         }
 
         function diagonal(s, d) {
@@ -775,15 +887,10 @@
         const searchInput = document.getElementById('search-input');
         const searchResults = document.getElementById('search-results');
         
-        // --- START FIX ---
-        // Remove the previous event listener if it exists to prevent duplicates
-        // when switching modules.
         if (searchHandler) {
             searchInput.removeEventListener('input', searchHandler);
         }
 
-        // Define the new handler within this scope. This creates a closure over the
-        // current mindmap's data and functions (allNodes, g, update, etc.).
         searchHandler = () => {
             const searchTerm = searchInput.value.toLowerCase().trim();
             searchResults.innerHTML = '';
@@ -824,11 +931,8 @@
             }
         };
         
-        // Add the new, correctly scoped event listener.
         searchInput.addEventListener('input', searchHandler);
-        // --- END FIX ---
         
-        // Restore search panel state visually
         const directoryContent = document.getElementById('directory-content');
         const directoryChevron = document.getElementById('directory-chevron');
         if (isSearchPanelOpen) {
@@ -854,7 +958,6 @@
 
         function centerNode(d) {
             const scale = currentTransform ? currentTransform.k : 1;
-            // Shift focus to the left (width / 3) to give more room for children on the right.
             const x = -d.y * scale + width / 3;
             const y = -d.x * scale + height / 2;
             const transform = d3.zoomIdentity.translate(x, y).scale(scale);

@@ -440,19 +440,49 @@
             applyTheme(localStorage.theme === 'dark' ? 'light' : 'dark');
         });
         
-        directoryHeader.addEventListener('click', (e) => {
-             if(e.target.closest('svg')) {
-                const isCollapsed = directoryContent.style.maxHeight === '0px' || directoryContent.style.maxHeight === '';
-                isSearchPanelOpen = !isCollapsed; // Update global state
-                if (isCollapsed) {
-                    directoryContent.style.maxHeight = directoryContent.scrollHeight + "px";
-                    directoryChevron.classList.remove('rotate-180');
-                } else {
+        // --- FIX for Mobile Panel Expansion ---
+        // More robust logic for toggling the search panel.
+        const toggleSearchPanel = () => {
+            // If it's open or opening, close it. `max-height` will be 'auto' or a pixel value.
+            if (isSearchPanelOpen) {
+                isSearchPanelOpen = false;
+                
+                // If max-height is 'auto', we first need to set it to the element's current height
+                // so the transition can work from a specific pixel value.
+                if (directoryContent.style.maxHeight === 'auto') {
+                    directoryContent.style.maxHeight = directoryContent.scrollHeight + 'px';
+                }
+
+                // In the next animation frame, set max-height to 0 to trigger the closing animation.
+                requestAnimationFrame(() => {
                     directoryContent.style.maxHeight = '0px';
                     directoryChevron.classList.add('rotate-180');
-                }
+                });
+            } else { // If it's closed, open it.
+                isSearchPanelOpen = true;
+                
+                // Set max-height to the content's full height to trigger the opening animation.
+                directoryContent.style.maxHeight = directoryContent.scrollHeight + 'px';
+                directoryChevron.classList.remove('rotate-180');
+                
+                // After the transition finishes, set max-height to 'auto'. This allows the panel
+                // to dynamically resize if its content (e.g., search results) changes.
+                const onTransitionEnd = () => {
+                    if(isSearchPanelOpen) { // Check it wasn't closed again during the animation
+                       directoryContent.style.maxHeight = 'auto';
+                    }
+                    directoryContent.removeEventListener('transitionend', onTransitionEnd);
+                };
+                directoryContent.addEventListener('transitionend', onTransitionEnd);
+            }
+        };
+
+        directoryHeader.addEventListener('click', (e) => {
+             if(e.target.closest('svg')) {
+                toggleSearchPanel();
             }
         });
+
 
         applyTheme(localStorage.theme === 'dark' ? 'dark' : 'light');
         setupModuleSwitcher(currentModule);
@@ -562,7 +592,7 @@
     }
 
     function loadNewModule(newModule, container) {
-        const newData = (newModule === 'mysql') ? window.mysqlData : (newModule === 'pyspark') ? window.pysparkData : window.gitData;
+        const newData = (newModule === 'mysql') ? window.mysqlData : (currentModule === 'pyspark') ? window.pysparkData : window.gitData;
         document.title = newData.name;
         initializeMindmap(newData);
 
@@ -1006,23 +1036,47 @@
                 }
             }
             
+            // --- REVISED FIX for Panel Expansion ---
+            // If the panel is open, explicitly update its max-height to animate the size change
+            // as new search results are added or removed.
             if (isSearchPanelOpen) {
-                 const directoryContent = document.getElementById('directory-content');
-                setTimeout(() => {
-                    directoryContent.style.maxHeight = directoryContent.scrollHeight + "px";
-                }, 50);
+                const directoryContent = document.getElementById('directory-content');
+                directoryContent.style.maxHeight = directoryContent.scrollHeight + 'px';
+
+                // After the transition, set max-height to 'auto' so it can continue to
+                // resize dynamically if the user keeps typing.
+                const onTransitionEnd = () => {
+                    if (isSearchPanelOpen) { // Only set to auto if it hasn't been closed
+                        directoryContent.style.maxHeight = 'auto';
+                    }
+                    directoryContent.removeEventListener('transitionend', onTransitionEnd);
+                };
+                directoryContent.addEventListener('transitionend', onTransitionEnd, { once: true });
             }
         };
         
         searchInput.addEventListener('input', searchHandler);
         
+        // --- FIX for Mobile Panel Expansion ---
+        // Use the new, more robust logic to set the initial state of the panel.
         const directoryContent = document.getElementById('directory-content');
         const directoryChevron = document.getElementById('directory-chevron');
+        
+        const openPanelInitially = () => {
+            directoryChevron.classList.remove('rotate-180');
+            directoryContent.style.maxHeight = directoryContent.scrollHeight + 'px';
+            const onTransitionEnd = () => {
+                if(isSearchPanelOpen) {
+                   directoryContent.style.maxHeight = 'auto';
+                }
+                directoryContent.removeEventListener('transitionend', onTransitionEnd);
+            };
+            directoryContent.addEventListener('transitionend', onTransitionEnd);
+        };
+
         if (isSearchPanelOpen) {
-            setTimeout(() => {
-                directoryContent.style.maxHeight = directoryContent.scrollHeight + "px";
-                directoryChevron.classList.remove('rotate-180');
-            }, 10);
+            // Use a timeout to ensure the DOM is fully rendered and scrollHeight is accurate.
+            setTimeout(openPanelInitially, 50);
         } else {
             directoryContent.style.maxHeight = '0px';
             directoryChevron.classList.add('rotate-180');

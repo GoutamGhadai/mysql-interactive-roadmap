@@ -493,6 +493,8 @@
         if (searchInput) searchInput.value = '';
         if (searchResults) searchResults.innerHTML = '';
 
+        // Reset the zoom transform so the new module starts with a fresh view
+        currentTransform = null; 
 
         const container = d3.select("#mindmap-container");
         const oldSvg = container.select("svg");
@@ -573,7 +575,7 @@
         }
         
         function update(source) {
-            const duration = 250;
+            const duration = 400; // Increased duration for better animation visibility
             const treeData = treemap(root);
             
             const nodes = treeData.descendants();
@@ -594,6 +596,7 @@
             const nodeEnter = node.enter().append("g")
                 .attr("class", "node")
                 .attr("transform", d => `translate(${source.y0},${source.x0})`)
+                .style("opacity", 1e-6) // Start nodes as transparent
                 .on("click", click)
                 .on("mouseover", function(event, d) {
                     const ancestors = d.ancestors();
@@ -641,7 +644,10 @@
             
             nodeUpdate.transition()
                 .duration(duration)
-                .attr("transform", d => `translate(${d.y},${d.x})`);
+                .attr("transform", d => `translate(${d.y},${d.x})`)
+                .style("opacity", 1) // Fade nodes in
+                // Stagger animation for new child nodes
+                .delay((d, i) => d.parent === source ? i * 20 : 0);
             
             nodeUpdate.each(function(d) {
                 const textNode = d3.select(this).select("text").node();
@@ -675,10 +681,10 @@
             const nodeExit = node.exit().transition()
                 .duration(duration)
                 .attr("transform", d => `translate(${source.y},${source.x})`)
+                .style("opacity", 1e-6) // Fade nodes out
                 .remove();
             
             nodeExit.select("rect").attr("width", 0).attr("height", 0);
-            nodeExit.select("text").style("fill-opacity", 1e-6);
             
             const link = g.selectAll("path.link")
                 .data(links, d => d.id);
@@ -689,6 +695,18 @@
                     const o = {x: source.x0, y: source.y0}
                     return diagonal(o, o)
                 });
+            
+            // Add the "drawing" effect for new links
+            linkEnter.each(function() {
+                const path = d3.select(this);
+                const totalLength = this.getTotalLength();
+                path.attr("stroke-dasharray", `${totalLength} ${totalLength}`)
+                    .attr("stroke-dashoffset", totalLength)
+                    .transition()
+                    .duration(duration)
+                    .delay(duration / 2) // Start drawing halfway through the node transition
+                    .attr("stroke-dashoffset", 0);
+            });
                 
             const linkUpdate = linkEnter.merge(link);
 
@@ -722,6 +740,8 @@
                 d._children = null;
             }
             update(d);
+            // After updating the tree, smoothly pan and zoom to the clicked node.
+            centerNode(d);
         }
 
         function diagonal(s, d) {
@@ -834,7 +854,8 @@
 
         function centerNode(d) {
             const scale = currentTransform ? currentTransform.k : 1;
-            const x = -d.y * scale + width / 2 - (d.rectWidth ? d.rectWidth / 2 * scale : 0);
+            // Shift focus to the left (width / 3) to give more room for children on the right.
+            const x = -d.y * scale + width / 3;
             const y = -d.x * scale + height / 2;
             const transform = d3.zoomIdentity.translate(x, y).scale(scale);
 
@@ -849,5 +870,4 @@
     </script>
 </body>
 </html>
-
 

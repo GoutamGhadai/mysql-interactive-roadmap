@@ -274,7 +274,7 @@
     </div>
 
 
-    <div id="controls-widget" class="absolute bottom-4 right-4 z-10 glass-ui rounded-lg cursor-move">
+    <div id="controls-widget" class="absolute top-24 right-4 lg:top-4 lg:left-4 lg:right-auto z-10 glass-ui rounded-lg">
         <button id="collapse-all-btn" class="px-4 py-2 rounded-lg font-semibold transition-colors" style="color: var(--button-text); background-color: transparent;" onmouseover="this.style.backgroundColor = 'var(--button-hover-bg)'" onmouseout="this.style.backgroundColor = 'transparent'">Collapse All</button>
     </div>
 
@@ -301,8 +301,8 @@
             dragHandle.style.cursor = 'move';
 
             const onDragStart = (e) => {
-                 // Allow dragging on the button container itself, but not the button inside
-                if (e.target.closest('input, svg, button')) return;
+                 // Prevent dragging from starting only on text inputs.
+                if (e.target.tagName === 'INPUT') return;
                 
                 if (e.type !== 'touchstart') e.preventDefault(); 
                 isDragging = true;
@@ -756,12 +756,14 @@
         const searchResults = document.getElementById('search-results');
         
         // --- START FIX ---
-        // Remove the previous event listener if it exists to prevent duplicates.
+        // Remove the previous event listener if it exists to prevent duplicates
+        // when switching modules.
         if (searchHandler) {
             searchInput.removeEventListener('input', searchHandler);
         }
 
-        // Define the new handler within this scope to create a closure over the current mindmap's data and functions.
+        // Define the new handler within this scope. This creates a closure over the
+        // current mindmap's data and functions (allNodes, g, update, etc.).
         searchHandler = () => {
             const searchTerm = searchInput.value.toLowerCase().trim();
             searchResults.innerHTML = '';
